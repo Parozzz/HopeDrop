@@ -1,0 +1,34 @@
+Diamond_Ore:
+  drop: true #Should the block drop basic items? WORKS ONLY IN MC1.12+
+  exp: 1-5 #How much xp should the mob drop? (min-max)
+  CoolThing:
+    Item:
+      id: diamond
+      name: "&cCool Diamond"
+      amount: 1-3
+      amountModifiers:
+        - enchant:LOOT_BONUS_BLOCK;0-1 #This will add min-max to the default value for each level of looting enchant
+        - potion:LUCK;0-1 #This will add min-max to the default value for each level of luck potion
+    #You can complety remove this part for the item to be always dropped by the mob
+    chance: 50 #Default value of chance. This is always applied
+    chanceModifiers:
+      #Chance modifiers. This applies only if the player have killed the mob (Or have mined the block).
+      - enchant:DAMAGE_ALL;3.5 #Add a certain % to the base value of chance for each level of sharpness
+      - potion:LUCK;2.5 #Add a certain % to the base value of chance for each level of luck potion 
+      - level:0.25 #Add a certain % to the base value of chance for each level the player have
+    condition:
+      #Generic conditions. Involves worlds and location based conditions.
+      - generic->world:world #Check the world
+      - generic->ylevel:14-28 #Check the Y level of where the event is happen.
+      - generic->biome:taiga #Check the biome of where the event is happen.
+      #Tool conditions. Involves conditions on the tool has been used.
+      - tool->type:DIAMOND_PICKAXE #Check the tool type
+      - tool->enchant:DAMAGE_ALL;3-5 #Check which enchantment and which level the tool must have.
+      - tool->enchant:DAMAGE_ALL;1 #Can be also used without - to check only for a specific enchantment level
+      #Player conditions. Involves conditions on player status
+      - player->health:10 #Check if has enough health
+      - player->hunger:10 #Check if has enough food bar
+      - player->onFire:true #Check if the player is on fire or not (true or false)
+      - player->level:5 #Check if it has enough levels
+      - player->permission:item.use #Check if has this permission
+      - player->gamemode:survival #Check the gamemode

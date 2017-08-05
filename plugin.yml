@@ -1,0 +1,8 @@
+name: HopeDrop
+version: 1.0
+main: me.parozzz.hopedrop.HopeDrop
+commands:
+  hopedrop:
+    aliases: [drop]
+    Usage: /drop
+    Description: Main plugin command
