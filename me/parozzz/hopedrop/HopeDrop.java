@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import me.parozzz.hopedrop.drop.DropHandler;
 import me.parozzz.hopedrop.reflection.ReflectionUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
@@ -52,7 +53,7 @@ public class HopeDrop extends JavaPlugin
         unregisterAll();
     }
     
-    private void load(final boolean reload) throws UnsupportedEncodingException, IOException, FileNotFoundException, InvalidConfigurationException
+    public void load(final boolean reload) throws UnsupportedEncodingException, IOException, FileNotFoundException, InvalidConfigurationException
     {
         if(reload)
         {
@@ -63,8 +64,11 @@ public class HopeDrop extends JavaPlugin
         FileConfiguration block=Utils.fileStartup(this, new File(this.getDataFolder(), "block.yml"));
         
         DropHandler dropHandler=new DropHandler(mob, block);
-        
         initializeListeners(dropHandler);
+        
+        FileConfiguration c=Utils.fileStartup(this, new File(this.getDataFolder(), "config.yml"));
+        initializeCommand("hopedrop", new MainCommand(c));
+        Configs.init(c);
     }
     
     private void initializeListeners(Listener... listeners)
@@ -72,12 +76,21 @@ public class HopeDrop extends JavaPlugin
         Stream.of(listeners).forEach(listener -> this.getServer().getPluginManager().registerEvents(listener, this));
     }
     
-    private void initializeStaticClass()
+    private void initializeCommand(final String cmd, final CommandExecutor ex)
     {
-        Utils.init();
-        ReflectionUtils.initialize();
+        this.getCommand(cmd).setExecutor(ex);
     }
     
+    private void initializeStaticClass()
+    {
+        Utils.init(this);
+        ReflectionUtils.initialize();
+        
+        if(Dependency.setupEconomy())
+        {
+            Bukkit.getLogger().info("Hooked into Vault");
+        }
+    }
     
     private void unregisterAll()
     {

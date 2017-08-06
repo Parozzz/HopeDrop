@@ -14,14 +14,16 @@ import me.parozzz.hopedrop.chance.ChanceManager;
  */
 public abstract class Drop 
 {
-    private final ItemManager item;
+    private final ItemManager itemManager;
     private final ConditionManager conditionManager;
     private final ChanceManager chanceManager;
-    public Drop(final ChanceManager chance, final ConditionManager cond, final ItemManager item)
+    private final RewardManager rewardManager;
+    public Drop(final ChanceManager chance, final ConditionManager cond, final ItemManager item, final RewardManager reward)
     {
         conditionManager=cond;
         chanceManager=chance;
-        this.item=item;
+        itemManager=item;
+        rewardManager=reward;
     }
         
     public ConditionManager getConditionManager()
@@ -36,6 +38,11 @@ public abstract class Drop
     
     public ItemManager getItemManager()
     {
-        return item;
+        return itemManager;
+    }
+    
+    public RewardManager getRewardManager()
+    {
+        return rewardManager;
     }
 }

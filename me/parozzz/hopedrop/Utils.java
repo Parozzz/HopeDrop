@@ -25,6 +25,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.FireworkEffect.Builder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -36,21 +38,30 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.material.SpawnEgg;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 /**
@@ -103,11 +114,13 @@ public final class Utils {
         PLAYEROFFLINE,WRONGITEM,ITEMGIVEN,FULLINVENTORY;
     }
     
-    private static Function<Player,ItemStack> getHand;
+    private static final String FIREWORK_DATA="Firework.NoDamage";
+    
+    private static Function<EntityEquipment,ItemStack> getHand;
     private static Function<LivingEntity,Double> getMaxHealth;
     private static BiConsumer<LivingEntity,Double> setMaxHealth;
     private static Predicate<ItemStack> checkUnbreakable;
-    public static void init()
+    public static void init(final JavaPlugin instance)
     {
         if(Utils.bukkitVersion("1.8"))
         {
@@ -118,7 +131,7 @@ public final class Utils {
         }
         else
         {
-            getHand = p -> p.getInventory().getItemInMainHand();
+            getHand = equip -> equip.getItemInMainHand();
             getMaxHealth= ent -> ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             setMaxHealth = (ent, health) -> ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
             
@@ -129,13 +142,21 @@ public final class Utils {
             else
             {
                 checkUnbreakable = item -> item.getItemMeta().isUnbreakable();
+                Bukkit.getServer().getPluginManager().registerEvents(new Listener()
+                {
+                    @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
+                    private void onFireworkDamage(final EntityDamageByEntityEvent e)
+                    {
+                        e.setCancelled(e.getDamager().getType()==EntityType.FIREWORK && e.getDamager().hasMetadata(FIREWORK_DATA));
+                    }
+                }, instance);
             }
         }
     }
     
-    public static ItemStack getMainHand(final Player p)
+    public static ItemStack getMainHand(final EntityEquipment equip)
     {
-        return getHand.apply(p);
+        return getHand.apply(equip);
     }
     
     public static double getMaxHealth(final LivingEntity ent)
@@ -427,5 +448,49 @@ public final class Utils {
     public static Boolean bukkitVersion(final String... version)
     { 
         return Arrays.stream(version).anyMatch(s -> Bukkit.getVersion().contains(s)); 
+    }
+    
+    public static class FireworkBuilder
+    {
+        private final JavaPlugin instance;
+        private final Builder builder;
+        public FireworkBuilder(final JavaPlugin instance)
+        {
+            this.instance=instance;
+            builder=FireworkEffect.builder();
+        }
+        
+        public FireworkBuilder addColor(final Color... colors)
+        {
+            builder.withColor(colors);
+            return this;
+        }
+        
+        private FireworkEffect effect;
+        public FireworkBuilder build()
+        {
+            effect=builder.build();
+            return this;
+        }
+        
+        public void spawn(final Location l)
+        {
+            Firework fw=(Firework)l.getWorld().spawnEntity(l, EntityType.FIREWORK);
+
+            FireworkMeta meta=fw.getFireworkMeta();
+            meta.addEffect(effect);
+            fw.setFireworkMeta(meta);
+
+            fw.setMetadata(Utils.FIREWORK_DATA, new FixedMetadataValue(instance,"Damage"));
+
+            new BukkitRunnable()
+            {
+                @Override
+                public void run() 
+                {
+                    fw.detonate();
+                }
+            }.runTaskLater(instance, 5);
+        }
     }
 }

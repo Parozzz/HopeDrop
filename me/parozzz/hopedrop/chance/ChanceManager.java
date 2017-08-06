@@ -50,7 +50,7 @@ public class ChanceManager
     {
         modifiers.add(p -> 
         {
-            return Optional.ofNullable(Utils.getMainHand(p)).map(hand -> hand.getEnchantmentLevel(ench)*modifier).orElseGet(() -> 0D);
+            return Optional.ofNullable(Utils.getMainHand(p.getEquipment())).map(hand -> hand.getEnchantmentLevel(ench)*modifier).orElseGet(() -> 0D);
         });
     }
     

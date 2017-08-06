@@ -23,7 +23,7 @@ public class Packets
     private static Method serialize;
     private static Class<?> nmsChatSerializer;
     
-    public static void initialize() 
+    protected static void initialize() 
             throws ClassNotFoundException, NoSuchFieldException
     {
         if (getVersion().contains("1_8")) 

@@ -22,6 +22,8 @@ import me.parozzz.hopedrop.condition.ToolCondition;
 import me.parozzz.hopedrop.condition.ToolCondition.ToolConditionType;
 import me.parozzz.hopedrop.drop.ConditionManager;
 import me.parozzz.hopedrop.drop.ConditionManager.ConditionManagerType;
+import me.parozzz.hopedrop.drop.RewardManager;
+import me.parozzz.hopedrop.drop.RewardManager.RewardType;
 import me.parozzz.hopedrop.drop.block.BlockConditionManager;
 import me.parozzz.hopedrop.drop.item.ItemManager;
 import me.parozzz.hopedrop.drop.item.ItemManager.AmountModifierType;
@@ -42,6 +44,39 @@ import org.bukkit.potion.PotionEffectType;
  */
 public class Parser 
 {
+    
+    public static RewardManager parseRewardManager(final List<String> list)
+    {
+        RewardManager manager=new RewardManager();
+        
+        list.stream().map(str -> str.replace("_", " ")).map(str -> str.split(":"))
+                .forEach(array -> 
+                {
+                    RewardType type=RewardType.valueOf(array[0].toUpperCase());
+                    String str=array[1];
+                    
+                    switch(type)
+                    {
+                        case ACTIONBAR:
+                            manager.addActionBarReward(Utils.color(str));
+                            break;
+                        case MESSAGE:
+                            manager.addMessageReward(Utils.color(str));
+                            break;
+                        case CONSOLECOMMAND:
+                            manager.addCommandReward(str, true);
+                            break;
+                        case PLAYERCOMMAND:
+                            manager.addCommandReward(str, false);
+                            break;
+                        case MONEY:
+                            manager.addMoneyReward(Double.valueOf(str));
+                            break;
+                    }
+                });
+        
+        return manager;
+    }
     
     public static ItemManager parseItemManager(final ConfigurationSection path)
     {
@@ -64,7 +99,7 @@ public class Parser
         return manager;
     }
     
-    public static void parseAmountModifier(final ItemManager manager, final AmountModifierType type, final String value)
+    private static void parseAmountModifier(final ItemManager manager, final AmountModifierType type, final String value)
     {
         String mod=value.substring(0, value.indexOf(";"));
         
@@ -106,7 +141,7 @@ public class Parser
         return manager;
     }
     
-    public static void parseChanceModifier(final ChanceManager manager, final ChanceModifierType type, final String value)
+    private static void parseChanceModifier(final ChanceManager manager, final ChanceModifierType type, final String value)
     {
         switch(type)
         {
@@ -169,7 +204,7 @@ public class Parser
         return manager;
     }
     
-    public static void addGenericCondition(final GenericCondition cond, final GenericConditionType type, final String value)
+    private static void addGenericCondition(final GenericCondition cond, final GenericConditionType type, final String value)
     {
         switch(type)
         {
@@ -188,7 +223,7 @@ public class Parser
         }
     }
     
-    public static void addMobCondition(final MobCondition cond, final MobConditionType type, final String value)
+    private static void addMobCondition(final MobCondition cond, final MobConditionType type, final String value)
     {
         switch(type)
         {
@@ -215,7 +250,7 @@ public class Parser
         }
     }
     
-    public static void addPlayerCondition(final PlayerCondition cond, final PlayerConditionType type, final String value)
+    private static void addPlayerCondition(final PlayerCondition cond, final PlayerConditionType type, final String value)
     {
         switch(type)
         {
@@ -240,7 +275,7 @@ public class Parser
         }
     }
     
-    public static void addToolCondition(final ToolCondition cond, final ToolConditionType type, final String value)
+    private static void addToolCondition(final ToolCondition cond, final ToolConditionType type, final String value)
     {
         switch(type)
         {

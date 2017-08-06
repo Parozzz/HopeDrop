@@ -10,12 +10,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
+import me.parozzz.hopedrop.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -56,7 +58,11 @@ public class MobCondition
                 conditions.add(ent -> ent.getEquipment().getBoots()!=null && ent.getEquipment().getBoots().getType()==type);
                 break;
             case HAND:
-                conditions.add(ent -> ent.getEquipment().getItemInMainHand()!=null && ent.getEquipment().getItemInMainHand().getType()==type);
+                conditions.add(ent -> 
+                { 
+                    ItemStack hand=Utils.getMainHand(ent.getEquipment());
+                    return hand!=null && hand.getType()==type;
+                });
                 break;
             default:
                 conditions.add(ent -> ent.getEquipment().getItemInOffHand()!=null && ent.getEquipment().getItemInOffHand().getType()==type);

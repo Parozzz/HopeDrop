@@ -9,7 +9,11 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import me.parozzz.hopedrop.Configs;
+import me.parozzz.hopedrop.Dependency;
 import me.parozzz.hopedrop.Parser;
 import me.parozzz.hopedrop.Utils;
 import me.parozzz.hopedrop.chance.ChanceManager;
@@ -66,6 +70,24 @@ public class DropHandler implements Listener
                             
                             options.setExpValues(min, max);
                         }
+                        else if(str.equalsIgnoreCase("money"))
+                        {
+                            String values=path.getString("money");
+                            
+                            if(values.contains("-"))
+                            {
+                                String[] array=values.split("-");
+                                
+                                double min=Double.valueOf(array[0]);
+                                double max=Double.valueOf(array[1]);
+                                
+                                options.setRandomMoneyDrop(min, max);
+                            }
+                            else
+                            {
+                                options.setMoneyDrop(Double.valueOf(values));
+                            }
+                        }
                         else
                         {
                             ConfigurationSection dropPath=path.getConfigurationSection(str);
@@ -73,8 +95,9 @@ public class DropHandler implements Listener
                             ChanceManager chance=Parser.parseChance(dropPath);
                             MobConditionManager cond=(MobConditionManager)Parser.parseCondition(ConditionManagerType.MOB, dropPath.getStringList("condition"));
                             ItemManager item=Parser.parseItemManager(dropPath.getConfigurationSection("Item"));
+                            RewardManager reward=Parser.parseRewardManager(dropPath.getStringList("reward"));
                             
-                            options.addDrop(new MobDrop(chance, cond, item));
+                            options.addDrop(new MobDrop(chance, cond, item, reward));
                         }
                     });
                     
@@ -101,6 +124,24 @@ public class DropHandler implements Listener
                             
                             options.setExpValues(min, max);
                         }
+                        else if(str.equalsIgnoreCase("money"))
+                        {
+                            String values=path.getString("money");
+                            
+                            if(values.contains("-"))
+                            {
+                                String[] array=values.split("-");
+                                
+                                double min=Double.valueOf(array[0]);
+                                double max=Double.valueOf(array[1]);
+                                
+                                options.setRandomMoneyDrop(min, max);
+                            }
+                            else
+                            {
+                                options.setMoneyDrop(Double.valueOf(values));
+                            }
+                        }
                         else
                         {
                             ConfigurationSection dropPath=path.getConfigurationSection(str);
@@ -108,8 +149,9 @@ public class DropHandler implements Listener
                             ChanceManager chance=Parser.parseChance(dropPath);
                             BlockConditionManager cond=(BlockConditionManager)Parser.parseCondition(ConditionManagerType.BLOCK, dropPath.getStringList("condition"));
                             ItemManager item=Parser.parseItemManager(dropPath.getConfigurationSection("Item"));
+                            RewardManager reward=Parser.parseRewardManager(dropPath.getStringList("reward"));
                             
-                            options.addDrop(new BlockDrop(chance, cond, item));
+                            options.addDrop(new BlockDrop(chance, cond, item, reward));
                         }
                     });
 
@@ -134,26 +176,39 @@ public class DropHandler implements Listener
 
             Player killer=e.getEntity().getKiller();
             
+            if(options.hasMoneyDrop() && killer!=null)
+            {
+                options.addMoney(killer);
+            }
+            
             options.getDrops().stream()
                     .filter(bd -> 
                     { 
                         MobConditionManager manager=bd.getConditionManager();
                         return killer==null?
                                 manager.getMobCondition().checkAll(e.getEntity()) && manager.getGenericCondition().checkAll(e.getEntity().getLocation()):
-                                manager.checkAll(e.getEntity().getLocation(), killer, Utils.getMainHand(killer), e.getEntity());
+                                manager.checkAll(e.getEntity().getLocation(), killer, Utils.getMainHand(killer.getEquipment()), e.getEntity());
                     })
                     .filter(bd -> killer==null?bd.getChanceManager().random():bd.getChanceManager().random(killer))
                     .forEach(bd -> 
                     {
                         ItemManager item=bd.getItemManager();
-
-                        Item entity=item.hasModifiersDrop()&&killer!=null?
-                                item.modifiersDrop(e.getEntity().getLocation(), killer):
-                                item.simpleDrop(e.getEntity().getLocation());
+                        if(killer!=null)
+                        {
+                            bd.getRewardManager().executeAll(killer);
+                            if(item.hasModifiersDrop())
+                            {
+                                item.modifiersDrop(e.getEntity().getLocation(), killer);
+                            }
+                        }
+                        else
+                        {
+                            item.simpleDrop(e.getEntity().getLocation());
+                        }
                     });
         });
     }
-    
+
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
     private void onBlockBreak(final BlockBreakEvent e)
     {
@@ -164,18 +219,24 @@ public class DropHandler implements Listener
                 e.setExpToDrop(options.getRandomExp());
             }
             
+            if(options.hasMoneyDrop())
+            {
+                options.addMoney(e.getPlayer());
+            }
+            
             if(Utils.bukkitVersion("1.12", "1.12.1"))
             {
                 e.setDropItems(options.getDropDefault());
             }
             
             options.getDrops().stream()
-                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getMainHand(e.getPlayer())))
+                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getMainHand(e.getPlayer().getEquipment())))
                     .filter(bd -> bd.getChanceManager().random(e.getPlayer()))
                     .forEach(bd -> 
                     {
-                        ItemManager item=bd.getItemManager();
+                        bd.getRewardManager().executeAll(e.getPlayer());
                         
+                        ItemManager item=bd.getItemManager();
                         Item entity=item.hasModifiersDrop()?item.modifiersDrop(e.getBlock().getLocation(), e.getPlayer()):item.simpleDrop(e.getBlock().getLocation());
                     });
         });
@@ -246,6 +307,46 @@ public class DropHandler implements Listener
         public int getRandomExp()
         {
             return expManager.generateBetween();
+        }
+        
+        private Consumer<Player> moneyGiver;
+        public void setMoneyDrop(final double money)
+        {
+            if(Dependency.isEconomyEnabled())
+            {
+                moneyGiver = p -> 
+                {
+                    if(Dependency.eco.depositPlayer(p, money).transactionSuccess())
+                    {
+                        Configs.sendMoneyMessage(p, money);
+                    }
+                };
+            }
+        }
+        
+        public void setRandomMoneyDrop(final double min, final double max)
+        {
+            if(Dependency.isEconomyEnabled())
+            {
+                moneyGiver = p -> 
+                {
+                    double money=ThreadLocalRandom.current().nextDouble(min, max);
+                    if(Dependency.eco.depositPlayer(p, money).transactionSuccess())
+                    {
+                        Configs.sendMoneyMessage(p, money);
+                    }
+                };
+            }
+        }
+        
+        public boolean hasMoneyDrop()
+        {
+            return moneyGiver!=null;
+        }
+        
+        public void addMoney(final Player p)
+        {
+            moneyGiver.accept(p);
         }
     }
 }

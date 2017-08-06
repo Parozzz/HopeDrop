@@ -91,7 +91,7 @@ public class Particle
     }
     
     private static Constructor<?> PacketPlayOutWorldParticles;
-    public static void initialize()
+    protected static void initialize()
     {
         try 
         {

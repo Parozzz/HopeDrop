@@ -52,7 +52,7 @@ public class NBT
     public static boolean hasItemTag(final Object nmsItemStack)
             throws IllegalAccessException, IllegalArgumentException, InvocationTargetException { return (boolean)hasItemTag.invoke(nmsItemStack); }
     
-    public static void initialize() 
+    protected static void initialize() 
             throws NoSuchMethodException, ClassNotFoundException
     {
         NBTTag.initialize();

@@ -7,6 +7,7 @@ package me.parozzz.hopedrop.drop.block;
 
 import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.drop.Drop;
+import me.parozzz.hopedrop.drop.RewardManager;
 import me.parozzz.hopedrop.drop.item.ItemManager;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,9 +18,9 @@ import org.bukkit.inventory.ItemStack;
 public class BlockDrop extends Drop
 {
     
-    public BlockDrop(final ChanceManager chance, final BlockConditionManager cond, final ItemManager item) 
+    public BlockDrop(final ChanceManager chance, final BlockConditionManager cond, final ItemManager item, final RewardManager reward) 
     {
-        super(chance, cond, item);
+        super(chance, cond, item, reward);
     }
     
     @Override

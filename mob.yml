@@ -1,13 +1,15 @@
 Pig:
   drop: true #Should the mob drop basic items?
   exp: 1-5 #How much xp should the mob drop? (min-max)
+  money: 0.1 #How much money the player will receive when the mob is killed? Vault and a Economy Provided needed
+  #money: 0.1-0.5 #This will give a random value between 0.1 and 0.5
   CoolThing:
     Item:
       id: diamond
       name: "&cCool Diamond"
       amount: 1-3
       amountModifiers:
-        - enchant:LOOT_BONUS_BLOCK;0-1 #This will add min-max to the default value for each level of looting enchant
+        - enchant:LOOT_BONUS_BLOCKS;0-1 #This will add min-max to the default value for each level of looting enchant
         - potion:LUCK;0-1 #This will add min-max to the default value for each level of luck potion
     #You can complety remove this part for the item to be always dropped by the mob
     chance: 50 #Default value of chance. This is always applied
@@ -39,3 +41,9 @@ Pig:
       - mob->baby:true #Check if the mob is baby or not (true or false)
       - mob->equipment:head;DIAMOND_HELMET #Check if the mob have the equipment in the selected slot
                                              #head, chest, legs, feet, hand, off_hand
+    reward:
+      - money:30 #Give money to the player
+      - message:&cYou_got_30_money #Send a message to the player. "_" will be replaced with an empty space
+      - actionbar:&cYou_got_30_money #Send an actionbar to the player. "_" will be replaced with an empty space
+      - playercommand:warp_spawn #Execute the command as the player. "_" will be replaced with an empty space
+      - consolecommand:warp_spawn_%player% #Execute the command as the console. %player% will be replaced by the name who got the drop. "_" will be replaced with an empty space

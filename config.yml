@@ -1,33 +1,9 @@
-condition:
-    #Generic conditions. Involves worlds and location based conditions.
-  - generic->world:world #Check the world
-  - generic->ylevel:14-28 #Check the Y level of where the event is happen.
-  - generic->biome:taiga #Check the biome of where the event is happen.
-  
-    #Tool conditions. Involves conditions on the tool has been used.
-  - tool->type:DIAMOND_PICKAXE #Check the tool type
-  - tool->enchant:DAMAGE_ALL;3-5 #Check which enchantment and which level the tool must have.
-  - tool->enchant:DAMAGE_ALL;1 #Can be also used without - to check only for a specific enchantment level
-  
-    #Player conditions. Involves conditions on player status
-  - player->health:10 #Check if has enough health
-  - player->hunger:10 #Check if has enough food bar
-  - player->onFire:true #Check if the player is on fire or not (true or false)
-  - player->level:5 #Check if it has enough levels
-  - player->permission:item.use #Check if has this permission
-  - player->gamemode:survival #Check the gamemode
-  
-    #Mob Condition. Involves condition on the killed mob status
-  - mob->onFire:true #Check if the mob was on fire (true or false)
-  - mob->killReason:Player #Check if the mob has been killed by something specific (by Player, fire or fall)
-  - mob->baby:true #Check if the mob is baby or not (true or false)
-  - mob->name:&7Stone Zombie #Check if the mob have the name
-  - mob->equipment:head;DIAMOND_HELMET #Check if the mob have the equipment in the selected slot
-                                       #head, chest, legs, feet, hand, off_hand
-chance:
-  #Base value of the chance. This is always applied
-  - value->base:50
-  #Chance modifiers. This applies only if the player have killed the mob (Or have mined the block).
-  - modifier->enchant:DAMAGE_ALL;3.5 #Add a certain % to the base value of chance for each level of sharpness
-  - modifier->potion:LUCK;2.5 #Add a certain % to the base value of chance for each level of luck potion 
-  - modifier->level:0.25 #Add a certain % to the base value of chance for each level the player have
+actionbarMoney: true #Should the onMoneyReceive message be displayed on the actionbar?
+
+Message:
+  Command:
+    reload: "&7/drop reload - &2Reload the configs"
+    onReload: "&2Plugin succesfully reloaded"
+    reloadFailed: "&4Something went wrong on plugin reload"
+  Normal:
+    onMoneyReceive: "&2&l+%money%"

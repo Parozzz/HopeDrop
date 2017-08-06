@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 public class ActionBar {
     private static Object nmsChatMessageType;
     private static Constructor<?> PacketPlayOutChat;
-    public static void initialize() 
+    protected static void initialize() 
     {
         nmsChatMessageType = (byte)2;
         Class<?> ChatMessageType=byte.class;
