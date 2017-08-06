@@ -1,3 +1,5 @@
+#A list of type of mob you can use. Some might not exist on your mc version.
+#https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
 Pig:
   drop: true #Should the mob drop basic items?
   exp: 1-5 #How much xp should the mob drop? (min-max)

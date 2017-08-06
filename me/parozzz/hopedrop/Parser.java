@@ -7,6 +7,7 @@ package me.parozzz.hopedrop;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.chance.ChanceManager.ChanceModifierType;
@@ -49,33 +50,37 @@ public class Parser
     {
         RewardManager manager=new RewardManager();
         
-        list.stream().map(str -> str.replace("_", " ")).map(str -> str.split(":"))
-                .forEach(array -> 
-                {
-                    RewardType type=RewardType.valueOf(array[0].toUpperCase());
-                    String str=array[1];
-                    
-                    switch(type)
-                    {
-                        case ACTIONBAR:
-                            manager.addActionBarReward(Utils.color(str));
-                            break;
-                        case MESSAGE:
-                            manager.addMessageReward(Utils.color(str));
-                            break;
-                        case CONSOLECOMMAND:
-                            manager.addCommandReward(str, true);
-                            break;
-                        case PLAYERCOMMAND:
-                            manager.addCommandReward(str, false);
-                            break;
-                        case MONEY:
-                            manager.addMoneyReward(Double.valueOf(str));
-                            break;
-                    }
-                });
+        list.stream().map(str -> str.replace("_", " ")).map(str -> str.split(":")).forEach(array -> 
+        {
+            RewardType type=RewardType.valueOf(array[0].toUpperCase());
+            String value=array[1];
+
+            Parser.addReward(manager, type, value);
+        });
         
         return manager;
+    }
+    
+    private static void addReward(final RewardManager manager, final RewardType type, final String value)
+    {
+        switch(type)
+        {
+            case ACTIONBAR:
+                manager.addActionBarReward(Utils.color(value));
+                break;
+            case MESSAGE:
+                manager.addMessageReward(Utils.color(value));
+                break;
+            case CONSOLECOMMAND:
+                manager.addCommandReward(value, true);
+                break;
+            case PLAYERCOMMAND:
+                manager.addCommandReward(value, false);
+                break;
+            case MONEY:
+                manager.addMoneyReward(Double.valueOf(value));
+                break;
+        }
     }
     
     public static ItemManager parseItemManager(final ConfigurationSection path)
@@ -110,10 +115,18 @@ public class Parser
         switch(type)
         {
             case ENCHANT:
-                manager.addEnchantModifier(Enchantment.getByName(mod), min, max);
+                Optional.ofNullable(Enchantment.getByName(mod.toUpperCase())).map(ench -> 
+                {
+                    manager.addEnchantModifier(ench, min, max);
+                    return ench;
+                }).orElseThrow(() -> new NullPointerException(mod+" is not a valid enchantment name"));
                 break;
             case POTION:
-                manager.addPotionModifier(PotionEffectType.getByName(mod), min, max);
+                Optional.ofNullable(PotionEffectType.getByName(mod.toUpperCase())).map(pet -> 
+                {
+                    manager.addPotionModifier(pet, min, max);
+                    return pet;
+                }).orElseThrow(() -> new NullPointerException(mod+" is not a valid potion effect"));
                 break;
         }   
     }
@@ -146,19 +159,29 @@ public class Parser
         switch(type)
         {
             case ENCHANT:
-                Enchantment ench=Enchantment.getByName(value.substring(0, value.indexOf(";")).toUpperCase());
-                double enchAdder=Double.valueOf(value.substring(value.indexOf(";")+1));
+                String enchant=value.substring(0, value.indexOf(";"));
                 
-                manager.addPlayerToolEnchantmentModifier(ench, enchAdder);
+                Optional.ofNullable(Enchantment.getByName(enchant.toUpperCase())).map(ench -> 
+                {
+                    double enchAdder=Double.valueOf(value.substring(value.indexOf(";")+1));
+                    manager.addPlayerToolEnchantmentModifier(ench, enchAdder);
+                    
+                    return ench;
+                }).orElseThrow(() -> new NullPointerException(enchant+" is not a valid enchantment"));
                 break;
             case LEVEL:
                 manager.addPlayerLevelModifier(Double.valueOf(value));
                 break;
             case POTION:
-                PotionEffectType pet=PotionEffectType.getByName(value.substring(0, value.indexOf(";")));
-                double potionAdder=Double.valueOf(value.substring(value.indexOf(";")+1));
+                String potion=value.substring(0, value.indexOf(";"));
                 
-                manager.addPlayerPotionModifier(pet, potionAdder);
+                Optional.ofNullable(PotionEffectType.getByName(potion.toUpperCase())).map(pet -> 
+                {
+                    double potionAdder=Double.valueOf(value.substring(value.indexOf(";")+1));
+                    manager.addPlayerPotionModifier(pet, potionAdder);
+
+                    return pet;
+                }).orElseThrow(() -> new NullPointerException(potion+" is not a valid potion"));
                 break;
         }
     }
@@ -212,7 +235,11 @@ public class Parser
                 cond.addBiomeCheck(Biome.valueOf(value.toUpperCase()));
                 break;
             case WORLD:
-                Optional.ofNullable(Bukkit.getServer().getWorld(value)).ifPresent(w -> cond.addWorldCheck(w));
+                Optional.ofNullable(Bukkit.getServer().getWorld(value)).map(w -> 
+                {
+                    cond.addWorldCheck(w);
+                    return w;
+                }).orElseThrow(() -> new NullPointerException(value+" is not a valid world name"));
                 break;
             case YLEVEL:
                 int min=Integer.valueOf(value.substring(0, value.indexOf("-")));
@@ -282,20 +309,24 @@ public class Parser
             case ENCHANT:
                 String[] array=value.split(";");
                 
-                Enchantment ench=Enchantment.getByName(array[0].toUpperCase());
+                String enchant=array[0];
                 String level=array[1];
                 
-                if(level.contains("-"))
+                Optional.ofNullable(Enchantment.getByName(enchant.toUpperCase())).map(ench -> 
                 {
-                    int min = Integer.valueOf(level.substring(0, level.indexOf("-")));
-                    int max = Integer.valueOf(level.substring(level.indexOf("-")+1));
-                    
-                    cond.addEnchantmentCheck(ench, min, max);
-                }
-                else
-                {
-                    cond.addEnchantmentCheck(ench, Integer.valueOf(level));
-                }
+                    if(level.contains("-"))
+                    {
+                        int min = Integer.valueOf(level.substring(0, level.indexOf("-")));
+                        int max = Integer.valueOf(level.substring(level.indexOf("-")+1));
+
+                        cond.addEnchantmentCheck(ench, min, max);
+                    }
+                    else
+                    {
+                        cond.addEnchantmentCheck(ench, Integer.valueOf(level));
+                    }
+                    return ench;
+                }).orElseThrow(() -> new NullPointerException(enchant+" is not a valid enchanment"));
                 break;
             case TYPE:
                 cond.addMaterialCheck(Material.valueOf(value.toUpperCase()));

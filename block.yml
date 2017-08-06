@@ -1,3 +1,5 @@
+#A list of all block material. Some of them might not exist in your server version.
+#https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
 Diamond_Ore:
   drop: true #Should the block drop basic items? WORKS ONLY IN MC1.12+
   exp: 1-5 #How much xp should the mob drop? (min-max)
