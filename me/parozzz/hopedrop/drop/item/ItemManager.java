@@ -6,16 +6,20 @@
 package me.parozzz.hopedrop.drop.item;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import me.parozzz.hopedrop.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 /**
  *
@@ -23,6 +27,11 @@ import org.bukkit.inventory.ItemStack;
  */
 public class ItemManager 
 {
+    public enum AmountModifierType 
+    {
+        POTION, ENCHANT;
+    }
+    
     private final Function<Location,Item> simpleDrop;
     
     private final ItemStack item;
@@ -30,25 +39,46 @@ public class ItemManager
     {
         this.item=item;
         
-        simpleDrop = l -> l.getWorld().dropItem(l, item.clone());
+        simpleDrop = l -> l.getWorld().dropItemNaturally(l, item.clone());
     }
     
-    private final Set<AmountModifier> modifiers=new HashSet<>();
-    public void addAmountModifier(final AmountModifier modifier)
+    private final Set<Function<Player, NumberManager>> modifiers=new HashSet<>();
+    
+    public void addEnchantModifier(final Enchantment ench, final int min, final int max)
     {
-        modifiers.add(modifier);
+        NumberManager manager =new NumberManager(min, max);
+        modifiers.add(p -> 
+        {
+            return Optional.ofNullable(Utils.getHand(p))
+                .map(item -> item.getEnchantmentLevel(ench))
+                .map(level -> manager.getMultipliedClone(level))
+                .orElseGet(() -> NumberManager.getEmptyManager());
+        });
+    }
+    
+    public void addPotionModifier(final PotionEffectType pet, final int min, final int max)
+    {
+        NumberManager manager=new NumberManager(min, max);
+        
+        modifiers.add(p -> 
+        {
+            return p.getActivePotionEffects().stream()
+                .filter(pe -> pe.getType()==pet)
+                .findFirst().map(pe -> manager.getMultipliedClone(pe.getAmplifier()+1))
+                .orElseGet(() -> NumberManager.getEmptyManager());
+        });
     }
     
     private BiFunction<Location, Player, Item> modifiersDrop; 
-    public void setMaxAndMin(final int min, final int max)
+    public void setMinAndMax(final int min, final int max)
     {
         NumberManager manager=new NumberManager(min, max);
         modifiersDrop = (l,p) -> 
         {
             ItemStack toDrop=new ItemStack(item);
-            toDrop.setAmount(manager.getAddedClone(modifiers.stream().map(am -> am.getNumbers(p)).collect(Collectors.toSet())).generateBetween());
+            toDrop.setAmount(manager.getAddedClone(modifiers.stream().map(pr -> pr.apply(p)).collect(Collectors.toSet())).generateBetween());
             
-            return l.getWorld().dropItem(l, toDrop);
+            return l.getWorld().dropItemNaturally(l, toDrop);
         };
     }
     

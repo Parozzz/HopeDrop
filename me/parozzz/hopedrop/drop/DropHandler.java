@@ -121,6 +121,7 @@ public class DropHandler implements Listener
     @EventHandler(ignoreCancelled=true, priority=EventPriority.LOW)
     private void onMobDeath(final EntityDeathEvent e)
     {
+        long l=System.currentTimeMillis();
         Optional.ofNullable(mobs.get(e.getEntityType())).ifPresent(options -> 
         {
             if(options.hasExpModified())
@@ -140,8 +141,8 @@ public class DropHandler implements Listener
                     { 
                         MobConditionManager manager=bd.getConditionManager();
                         return killer==null?
-                                manager.checkMob(e.getEntity()) && manager.checkGeneric(e.getEntity().getLocation()):
-                                manager.checkAll(killer, Utils.getHand(killer), e.getEntity().getLocation(), e.getEntity());
+                                manager.getMobCondition().checkAll(e.getEntity()) && manager.getGenericCondition().checkAll(e.getEntity().getLocation()):
+                                manager.checkAll(e.getEntity().getLocation(), killer, Utils.getHand(killer), e.getEntity());
                     })
                     .filter(bd -> killer==null?bd.getChanceManager().random():bd.getChanceManager().random(killer))
                     .forEach(bd -> 
@@ -153,6 +154,8 @@ public class DropHandler implements Listener
                                 item.simpleDrop(e.getEntity().getLocation());
                     });
         });
+        
+        Bukkit.getLogger().log(Level.INFO, "TIME MOB KILL:{0}", Long.toString(System.currentTimeMillis() - l));
     }
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
@@ -171,7 +174,7 @@ public class DropHandler implements Listener
             }
             
             options.getDrops().stream()
-                    .filter(bd -> bd.getConditionManager().checkAll(e.getPlayer(), Utils.getHand(e.getPlayer()), e.getBlock().getLocation()))
+                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getHand(e.getPlayer())))
                     .filter(bd -> bd.getChanceManager().random(e.getPlayer()))
                     .forEach(bd -> 
                     {

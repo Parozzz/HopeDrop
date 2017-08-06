@@ -8,7 +8,7 @@ package me.parozzz.hopedrop.drop.mob;
 import java.util.HashSet;
 import java.util.Set;
 import me.parozzz.hopedrop.chance.ChanceManager;
-import me.parozzz.hopedrop.condition.mob.MobCondition;
+import me.parozzz.hopedrop.condition.MobCondition;
 import me.parozzz.hopedrop.drop.ConditionManager;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
@@ -21,25 +21,20 @@ import org.bukkit.inventory.ItemStack;
  */
 public class MobConditionManager extends ConditionManager
 {
-    private final Set<MobCondition> mobCondition;
+    private final MobCondition mobCondition;
     public MobConditionManager()
     {
         super();
-        mobCondition=new HashSet<>();
+        mobCondition=new MobCondition();
     }
     
-    public void addMobCondition(final MobCondition cond)
+    public MobCondition getMobCondition()
     {
-        mobCondition.add(cond);
+        return mobCondition;
     }
     
-    public boolean checkMob(final LivingEntity ent)
+    public boolean checkAll(final Location l, final Player p, final ItemStack tool, final LivingEntity ent)
     {
-        return mobCondition.stream().allMatch(mc -> mc.check(ent));
-    } 
-    
-    public boolean checkAll(final Player p, final ItemStack tool, final Location l, final LivingEntity ent)
-    {
-        return checkPlayer(p) && checkTool(tool) && checkGeneric(l) && checkMob(ent);
+        return getGenericCondition().checkAll(l) && getPlayerCondition().checkAll(p) && getToolCondition().checkAll(tool) && mobCondition.checkAll(ent);
     }
 }

@@ -5,52 +5,26 @@
  */
 package me.parozzz.hopedrop;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import me.parozzz.hopedrop.chance.ChanceManager;
-import me.parozzz.hopedrop.chance.ChanceModifier;
-import me.parozzz.hopedrop.chance.ChanceModifierType;
-import me.parozzz.hopedrop.chance.PlayerLevelModifier;
-import me.parozzz.hopedrop.chance.PlayerPotionModifier;
-import me.parozzz.hopedrop.chance.ToolEnchantmentModifier;
+import me.parozzz.hopedrop.chance.ChanceManager.ChanceModifierType;
 import me.parozzz.hopedrop.condition.ConditionType;
-import me.parozzz.hopedrop.condition.generic.CheckBiome;
-import me.parozzz.hopedrop.condition.generic.CheckWorld;
-import me.parozzz.hopedrop.condition.generic.CheckYLevel;
-import me.parozzz.hopedrop.condition.generic.GenericCondition;
-import me.parozzz.hopedrop.condition.generic.GenericConditionType;
-import me.parozzz.hopedrop.condition.mob.CheckBaby;
-import me.parozzz.hopedrop.condition.mob.CheckEquipment;
-import me.parozzz.hopedrop.condition.mob.CheckKillReason;
-import me.parozzz.hopedrop.condition.mob.CheckKillReason.KillReason;
-import me.parozzz.hopedrop.condition.mob.CheckMobOnFire;
-import me.parozzz.hopedrop.condition.mob.CheckName;
-import me.parozzz.hopedrop.condition.mob.MobCondition;
-import me.parozzz.hopedrop.condition.mob.MobConditionType;
-import me.parozzz.hopedrop.condition.player.CheckGamemode;
-import me.parozzz.hopedrop.condition.player.CheckHealth;
-import me.parozzz.hopedrop.condition.player.CheckHunger;
-import me.parozzz.hopedrop.condition.player.CheckLevel;
-import me.parozzz.hopedrop.condition.player.CheckPermission;
-import me.parozzz.hopedrop.condition.player.CheckPlayerOnFire;
-import me.parozzz.hopedrop.condition.player.PlayerCondition;
-import me.parozzz.hopedrop.condition.player.PlayerConditionType;
-import me.parozzz.hopedrop.condition.tool.CheckEnchantment;
-import me.parozzz.hopedrop.condition.tool.CheckMaterial;
-import me.parozzz.hopedrop.condition.tool.ToolCondition;
-import me.parozzz.hopedrop.condition.tool.ToolConditionType;
+import me.parozzz.hopedrop.condition.GenericCondition;
+import me.parozzz.hopedrop.condition.GenericCondition.GenericConditionType;
+import me.parozzz.hopedrop.condition.MobCondition;
+import me.parozzz.hopedrop.condition.MobCondition.KillReason;
+import me.parozzz.hopedrop.condition.MobCondition.MobConditionType;
+import me.parozzz.hopedrop.condition.PlayerCondition;
+import me.parozzz.hopedrop.condition.PlayerCondition.PlayerConditionType;
+import me.parozzz.hopedrop.condition.ToolCondition;
+import me.parozzz.hopedrop.condition.ToolCondition.ToolConditionType;
 import me.parozzz.hopedrop.drop.ConditionManager;
 import me.parozzz.hopedrop.drop.ConditionManagerType;
 import me.parozzz.hopedrop.drop.block.BlockConditionManager;
-import me.parozzz.hopedrop.drop.item.AmountEnchantModifier;
-import me.parozzz.hopedrop.drop.item.AmountModifier;
-import me.parozzz.hopedrop.drop.item.AmountModifierType;
-import me.parozzz.hopedrop.drop.item.AmountPotionModifier;
 import me.parozzz.hopedrop.drop.item.ItemManager;
+import me.parozzz.hopedrop.drop.item.ItemManager.AmountModifierType;
 import me.parozzz.hopedrop.drop.mob.MobConditionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -60,7 +34,6 @@ import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 /**
@@ -81,17 +54,17 @@ public class Parser
             int min=Integer.valueOf(values.substring(0, values.indexOf("-")));
             int max=Integer.valueOf(values.substring(values.indexOf("-")+1));
             
-            manager.setMaxAndMin(min, max);
+            manager.setMinAndMax(min, max);
             
             path.getStringList("amountModifiers").stream().map(str -> str.split(":"))
                     .collect(Collectors.toMap(array -> array[1], array -> AmountModifierType.valueOf(array[0].toUpperCase())))
-                    .forEach((str, type) ->  manager.addAmountModifier(Parser.parseAmountModifier(type, str)));
+                    .forEach((str, type) ->  Parser.parseAmountModifier(manager, type, str));
         }
         
         return manager;
     }
     
-    public static AmountModifier parseAmountModifier(final AmountModifierType type, final String value)
+    public static void parseAmountModifier(final ItemManager manager, final AmountModifierType type, final String value)
     {
         String mod=value.substring(0, value.indexOf(";"));
         
@@ -102,11 +75,11 @@ public class Parser
         switch(type)
         {
             case ENCHANT:
-                return new AmountEnchantModifier(Enchantment.getByName(mod), min, max);
+                manager.addEnchantModifier(Enchantment.getByName(mod), min, max);
+                break;
             case POTION:
-                return new AmountPotionModifier(PotionEffectType.getByName(mod), min, max);
-            default:
-                return null;
+                manager.addPotionModifier(PotionEffectType.getByName(mod), min, max);
+                break;
         }   
     }
     
@@ -122,7 +95,7 @@ public class Parser
                 String modifier=array[0];
                 String value=array[1];
 
-                manager.addChanceModifier(Parser.parseChanceModifier(ChanceModifierType.valueOf(modifier.toUpperCase()), value));
+                Parser.parseChanceModifier(manager, ChanceModifierType.valueOf(modifier.toUpperCase()), value);
             });
         }
         else
@@ -133,7 +106,7 @@ public class Parser
         return manager;
     }
     
-    public static ChanceModifier parseChanceModifier(final ChanceModifierType type, final String value)
+    public static void parseChanceModifier(final ChanceManager manager, final ChanceModifierType type, final String value)
     {
         switch(type)
         {
@@ -141,16 +114,17 @@ public class Parser
                 Enchantment ench=Enchantment.getByName(value.substring(0, value.indexOf(";")).toUpperCase());
                 double enchAdder=Double.valueOf(value.substring(value.indexOf(";")+1));
                 
-                return new ToolEnchantmentModifier(ench, enchAdder);
+                manager.addPlayerToolEnchantmentModifier(ench, enchAdder);
+                break;
             case LEVEL:
-                return new PlayerLevelModifier(Double.valueOf(value));
+                manager.addPlayerLevelModifier(Double.valueOf(value));
+                break;
             case POTION:
                 PotionEffectType pet=PotionEffectType.getByName(value.substring(0, value.indexOf(";")));
                 double potionAdder=Double.valueOf(value.substring(value.indexOf(";")+1));
                 
-                return new PlayerPotionModifier(pet, potionAdder);
-            default:
-                return null;
+                manager.addPlayerPotionModifier(pet, potionAdder);
+                break;
         }
     }
     
@@ -176,89 +150,97 @@ public class Parser
                     switch(ct)
                     {
                         case GENERIC:
-                            manager.addGenericCondition(Parser.getGenericCondition(GenericConditionType.valueOf(condition.toUpperCase()), value));
+                            Parser.addGenericCondition(manager.getGenericCondition(), GenericConditionType.valueOf(condition.toUpperCase()), value);
                             break;
                         case MOB:
                             if(type==ConditionManagerType.MOB)
                             {
-                                ((MobConditionManager)manager).addMobCondition(Parser.getMobCondition(MobConditionType.valueOf(condition.toUpperCase()), value));
+                                Parser.addMobCondition(((MobConditionManager)manager).getMobCondition(), MobConditionType.valueOf(condition.toUpperCase()), value);
                             }
                             break;
                         case PLAYER:
-                            manager.addPlayerCondition(Parser.getPlayerCondition(PlayerConditionType.valueOf(condition.toUpperCase()), value));
+                            Parser.addPlayerCondition(manager.getPlayerCondition(), PlayerConditionType.valueOf(condition.toUpperCase()), value);
                             break;
                         case TOOL:
-                            manager.addToolCondition(Parser.getToolCondition(ToolConditionType.valueOf(condition.toUpperCase()), value));
+                            Parser.addToolCondition(manager.getToolCondition(), ToolConditionType.valueOf(condition.toUpperCase()), value);
                             break;
                     }
                 });
         return manager;
     }
     
-    public static GenericCondition getGenericCondition(final GenericConditionType type, final String value)
+    public static void addGenericCondition(final GenericCondition cond, final GenericConditionType type, final String value)
     {
         switch(type)
         {
             case BIOME:
-                return new CheckBiome(Biome.valueOf(value.toUpperCase()));
+                cond.addBiomeCheck(Biome.valueOf(value.toUpperCase()));
+                break;
             case WORLD:
-                return Optional.ofNullable(Bukkit.getServer().getWorld(value)).map(w -> new CheckWorld(w)).orElseGet(() -> null);
+                Optional.ofNullable(Bukkit.getServer().getWorld(value)).ifPresent(w -> cond.addWorldCheck(w));
+                break;
             case YLEVEL:
                 int min=Integer.valueOf(value.substring(0, value.indexOf("-")));
                 int max=Integer.valueOf(value.substring(value.indexOf("-")+1));
                 
-                return new CheckYLevel(min, max);
-            default:
-                return null;
+                cond.addYCheck(min, max);
+                break;
         }
     }
     
-    public static MobCondition getMobCondition(final MobConditionType type, final String value)
+    public static void addMobCondition(final MobCondition cond, final MobConditionType type, final String value)
     {
         switch(type)
         {
             case BABY:
-                return new CheckBaby(Boolean.valueOf(value.toUpperCase()));
+                cond.addAgeCheck(Boolean.valueOf(value.toUpperCase()));
+                break;
             case EQUIPMENT:
                 String[] array = value.split(";");
                 
                 EquipmentSlot slot=EquipmentSlot.valueOf(array[0].toUpperCase());
                 Material m=Material.valueOf(array[1].toUpperCase());
                 
-                return new CheckEquipment(slot, m);
+                cond.addEquipmentCheck(slot, m);
+                break;
             case KILLREASON:
-                return new CheckKillReason(KillReason.valueOf(value.toUpperCase()));
+                cond.addKillReasonCheck(KillReason.valueOf(value.toUpperCase()));
+                break;
             case NAME:
-                return new CheckName(ChatColor.translateAlternateColorCodes('&', value));
+                cond.addNameCheck(ChatColor.translateAlternateColorCodes('&', value));
+                break;
             case ONFIRE:
-                return new CheckMobOnFire(Boolean.valueOf(value.toUpperCase()));
-            default:
-                return null;
+                cond.addOnFireCheck(Boolean.valueOf(value.toUpperCase()));
+                break;
         }
     }
     
-    public static PlayerCondition getPlayerCondition(final PlayerConditionType type, final String value)
+    public static void addPlayerCondition(final PlayerCondition cond, final PlayerConditionType type, final String value)
     {
         switch(type)
         {
             case GAMEMODE:
-                return new CheckGamemode(GameMode.valueOf(value.toUpperCase()));
+                cond.addGameModeCheck(GameMode.valueOf(value.toUpperCase()));
+                break;
             case HEALTH:
-                return new CheckHealth(Double.valueOf(value));
+                cond.addHealthCheck(Double.valueOf(value));
+                break;
             case HUNGER:
-                return new CheckHunger(Integer.valueOf(value));
+                cond.addHungerCheck(Integer.valueOf(value));
+                break;
             case LEVEL:
-                return new CheckLevel(Integer.valueOf(value));
+                cond.addLevelCheck(Integer.valueOf(value));
+                break;
             case ONFIRE:
-                return new CheckPlayerOnFire(Boolean.valueOf(value.toUpperCase()));
+                cond.addOnFireCheck(Boolean.valueOf(value.toUpperCase()));
+                break;
             case PERMISSION:
-                return new CheckPermission(value);
-            default:
-                return null;
+                cond.addPermissionCheck(value);
+                break;
         }
     }
     
-    public static ToolCondition getToolCondition(final ToolConditionType type, final String value)
+    public static void addToolCondition(final ToolCondition cond, final ToolConditionType type, final String value)
     {
         switch(type)
         {
@@ -273,16 +255,16 @@ public class Parser
                     int min = Integer.valueOf(level.substring(0, level.indexOf("-")));
                     int max = Integer.valueOf(level.substring(level.indexOf("-")+1));
                     
-                    return new CheckEnchantment(ench, min, max);
+                    cond.addEnchantmentCheck(ench, min, max);
                 }
                 else
                 {
-                    return new CheckEnchantment(ench, Integer.valueOf(level));
+                    cond.addEnchantmentCheck(ench, Integer.valueOf(level));
                 }
+                break;
             case TYPE:
-                return new CheckMaterial(Material.valueOf(value.toUpperCase()));
-            default:
-                return null;
+                cond.addMaterialCheck(Material.valueOf(value.toUpperCase()));
+                break;
         }
     }
 }

@@ -8,9 +8,9 @@ package me.parozzz.hopedrop.drop;
 import java.util.HashSet;
 import java.util.Set;
 import me.parozzz.hopedrop.chance.ChanceManager;
-import me.parozzz.hopedrop.condition.generic.GenericCondition;
-import me.parozzz.hopedrop.condition.player.PlayerCondition;
-import me.parozzz.hopedrop.condition.tool.ToolCondition;
+import me.parozzz.hopedrop.condition.GenericCondition;
+import me.parozzz.hopedrop.condition.PlayerCondition;
+import me.parozzz.hopedrop.condition.ToolCondition;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,44 +22,30 @@ import org.bukkit.inventory.ItemStack;
       
 public abstract class ConditionManager
 {
-    private final Set<GenericCondition> genericCondition;
-    private final Set<ToolCondition> toolCondition;
-    private final Set<PlayerCondition> playerCondition;
+    private final GenericCondition genericCondition;
+    private final ToolCondition toolCondition;
+    private final PlayerCondition playerCondition;
   
     public ConditionManager()
     {
-        genericCondition=new HashSet<>();
-        toolCondition=new HashSet<>();
-        playerCondition=new HashSet<>();
+        genericCondition=new GenericCondition();
+        toolCondition=new ToolCondition();
+        playerCondition=new PlayerCondition();
     }
 
-    public void addGenericCondition(final GenericCondition cond)
+    public GenericCondition getGenericCondition()
     {
-        genericCondition.add(cond);
+        return genericCondition;
     }
 
-    public void addToolCondition(final ToolCondition cond)
+    public ToolCondition getToolCondition()
     {
-        toolCondition.add(cond);
+        return toolCondition;
+    }
+    
+    public PlayerCondition getPlayerCondition()
+    {
+        return playerCondition;
     }
 
-    public void addPlayerCondition(final PlayerCondition cond)
-    {
-        playerCondition.add(cond);
-    }
-
-    public boolean checkGeneric(final Location l)
-    {
-        return genericCondition.stream().allMatch(gc -> gc.check(l));
-    }
-
-    public boolean checkTool(final ItemStack tool)
-    {
-        return toolCondition.stream().allMatch(tc -> tc.check(tool));
-    }
-
-    public boolean checkPlayer(final Player p)
-    {
-        return playerCondition.stream().allMatch(pc -> pc.check(p));
-    }
 }

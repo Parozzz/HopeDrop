@@ -22,8 +22,8 @@ public class BlockConditionManager extends ConditionManager
         super();
     }
     
-    public boolean checkAll(final Player p, final ItemStack tool, final Location l)
+    public boolean checkAll(final Location l, final Player p, final ItemStack tool)
     {
-        return checkGeneric(l) && checkTool(tool) && checkPlayer(p);
+        return getGenericCondition().checkAll(l) && getPlayerCondition().checkAll(p) && getToolCondition().checkAll(tool);
     }
 }
