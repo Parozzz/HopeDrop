@@ -16,6 +16,7 @@ import me.parozzz.hopedrop.Configs;
 import me.parozzz.hopedrop.Dependency;
 import me.parozzz.hopedrop.Parser;
 import me.parozzz.hopedrop.Utils;
+import me.parozzz.hopedrop.Utils.CreatureType;
 import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.drop.ConditionManager.ConditionManagerType;
 import me.parozzz.hopedrop.drop.block.BlockConditionManager;
@@ -42,17 +43,17 @@ import org.bukkit.event.entity.EntityDeathEvent;
  */
 public class DropHandler implements Listener
 {
-    private final EnumMap<EntityType, MobDropOptions> mobs;
+    private final EnumMap<CreatureType, MobDropOptions> mobs;
     private final EnumMap<Material, BlockDropOptions> blocks;
     
     public DropHandler(final FileConfiguration mob, final FileConfiguration block)
     {
-        mobs=new EnumMap(EntityType.class);
+        mobs=new EnumMap(CreatureType.class);
         blocks=new EnumMap(Material.class);
         
         mob.getKeys(false).stream()
-                .collect(Collectors.toMap(str -> mob.getConfigurationSection(str), str -> EntityType.valueOf(str.toUpperCase())))
-                .forEach((path, et) -> 
+                .collect(Collectors.toMap(str -> mob.getConfigurationSection(str), str -> CreatureType.valueOf(str.toUpperCase())))
+                .forEach((path, ct) -> 
                 {
                     MobDropOptions options=new MobDropOptions();
                     path.getKeys(false).forEach(str -> 
@@ -101,7 +102,7 @@ public class DropHandler implements Listener
                         }
                     });
                     
-                    mobs.put(et, options);
+                    mobs.put(ct, options);
                 });
         
         block.getKeys(false).stream()
@@ -162,7 +163,7 @@ public class DropHandler implements Listener
     @EventHandler(ignoreCancelled=true, priority=EventPriority.LOW)
     private void onMobDeath(final EntityDeathEvent e)
     {
-        Optional.ofNullable(mobs.get(e.getEntityType())).ifPresent(options -> 
+        Optional.ofNullable(mobs.get(CreatureType.getByLivingEntity(e.getEntity()))).ifPresent(options -> 
         {
             if(options.hasExpModified())
             {

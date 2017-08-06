@@ -39,9 +39,14 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
+import org.bukkit.entity.Guardian;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Villager;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -87,6 +92,108 @@ public final class Utils {
         pl.getLogger().info("HotbarSlot: "+Integer.toString(e.getHotbarButton()));
         pl.getLogger().info("=====================");
     */
+    public static enum CreatureType
+    {
+        ALL,
+        BAT,
+        BLAZE,
+        SPIDER, CAVE_SPIDER,
+        CHICKEN,
+        COW, MUSHROOM_COW,
+        CREEPER,
+        ENDER_DRAGON,
+        ENDERMAN,
+        ENDERMITE,
+        GHAST,
+        GUARDIAN, ELDER_GUARDIAN,
+        HORSE,SKELETON_HORSE, ZOMBIE_HORSE, MULE, DONKEY, LLAMA,
+        IRON_GOLEM, SNOWMAN,
+        OCELOT,
+        PARROT,
+        PIG,
+        POLAR_BEAR,
+        RABBIT,
+        SHEEP,
+        SHULKER,
+        SILVERFISH,
+        SKELETON, WITHER_SKELETON, STRAY,
+        SLIME, MAGMA_CUBE,
+        SQUID,
+        VILLAGER,
+        VINDICATOR, EVOKER, ILLUSIONER,
+        VEX,
+        WITCH,
+        WOLF,
+        ZOMBIE, ZOMBIE_VILLAGER, PIG_ZOMBIE, HUSK, GIANT,
+        WITHER,
+        PLAYER;
+        
+        private static Function<LivingEntity, CreatureType> getByEntity;
+        public static void init()
+        {
+            if(Utils.bukkitVersion("1.11", "1.12"))
+            {
+                getByEntity = ent -> CreatureType.valueOf(ent.getType().name());
+            }
+            else
+            {
+                getByEntity = ent -> 
+                {
+                    switch(ent.getType())
+                    {
+                        case SKELETON:
+                            switch(((Skeleton)ent).getSkeletonType())
+                            {
+                                case STRAY: 
+                                    return CreatureType.STRAY;
+                                case WITHER: 
+                                    return CreatureType.WITHER_SKELETON;
+                                default: 
+                                    return CreatureType.SKELETON;
+                            }
+                        case HORSE:
+                            switch(((Horse)ent).getVariant())
+                            {
+                                case DONKEY:
+                                    return CreatureType.DONKEY;
+                                case MULE: 
+                                    return CreatureType.MULE;
+                                case LLAMA: 
+                                    return CreatureType.LLAMA;
+                                case SKELETON_HORSE:
+                                    return CreatureType.SKELETON_HORSE;
+                                case UNDEAD_HORSE: 
+                                    return CreatureType.ZOMBIE_HORSE;
+                                default:
+                                    return CreatureType.HORSE;
+                            }
+                        case ZOMBIE:
+                            if(((Zombie)ent).isVillager()) 
+                            {
+                                if(!Utils.bukkitVersion("1.8") && ((Zombie)ent).getVillagerProfession() == Villager.Profession.HUSK) 
+                                { 
+                                    return CreatureType.HUSK; 
+                                }
+                                return CreatureType.ZOMBIE_VILLAGER;
+                            }
+                            else 
+                            { 
+                                return CreatureType.ZOMBIE; 
+                            }
+                        case GUARDIAN: 
+                            return ((Guardian)ent).isElder()?CreatureType.ELDER_GUARDIAN:CreatureType.GUARDIAN;
+                        default: 
+                            return CreatureType.valueOf(ent.getType().name());
+                    }
+                };
+            }
+        }
+        
+        public static CreatureType getByLivingEntity(final LivingEntity ent)
+        {
+            return getByEntity.apply(ent);
+        }
+    }
     
     public static enum ColorEnum
     {
@@ -122,6 +229,7 @@ public final class Utils {
     private static Predicate<ItemStack> checkUnbreakable;
     public static void init(final JavaPlugin instance)
     {
+        CreatureType.init();
         if(Utils.bukkitVersion("1.8"))
         {
             getHand = p -> p.getItemInHand();
