@@ -5,15 +5,9 @@
  */
 package me.parozzz.hopedrop.drop;
 
-import java.util.HashSet;
-import java.util.Set;
-import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.condition.GenericCondition;
 import me.parozzz.hopedrop.condition.PlayerCondition;
 import me.parozzz.hopedrop.condition.ToolCondition;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -22,6 +16,12 @@ import org.bukkit.inventory.ItemStack;
       
 public abstract class ConditionManager
 {
+    public enum ConditionManagerType 
+    {
+        MOB, BLOCK;
+    }
+
+    
     private final GenericCondition genericCondition;
     private final ToolCondition toolCondition;
     private final PlayerCondition playerCondition;

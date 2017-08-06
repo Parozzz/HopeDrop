@@ -9,18 +9,17 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import me.parozzz.hopedrop.Parser;
 import me.parozzz.hopedrop.Utils;
 import me.parozzz.hopedrop.chance.ChanceManager;
+import me.parozzz.hopedrop.drop.ConditionManager.ConditionManagerType;
 import me.parozzz.hopedrop.drop.block.BlockConditionManager;
 import me.parozzz.hopedrop.drop.block.BlockDrop;
 import me.parozzz.hopedrop.drop.item.ItemManager;
 import me.parozzz.hopedrop.drop.item.NumberManager;
 import me.parozzz.hopedrop.drop.mob.MobConditionManager;
 import me.parozzz.hopedrop.drop.mob.MobDrop;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -141,7 +140,7 @@ public class DropHandler implements Listener
                         MobConditionManager manager=bd.getConditionManager();
                         return killer==null?
                                 manager.getMobCondition().checkAll(e.getEntity()) && manager.getGenericCondition().checkAll(e.getEntity().getLocation()):
-                                manager.checkAll(e.getEntity().getLocation(), killer, Utils.getHand(killer), e.getEntity());
+                                manager.checkAll(e.getEntity().getLocation(), killer, Utils.getMainHand(killer), e.getEntity());
                     })
                     .filter(bd -> killer==null?bd.getChanceManager().random():bd.getChanceManager().random(killer))
                     .forEach(bd -> 
@@ -171,7 +170,7 @@ public class DropHandler implements Listener
             }
             
             options.getDrops().stream()
-                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getHand(e.getPlayer())))
+                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getMainHand(e.getPlayer())))
                     .filter(bd -> bd.getChanceManager().random(e.getPlayer()))
                     .forEach(bd -> 
                     {

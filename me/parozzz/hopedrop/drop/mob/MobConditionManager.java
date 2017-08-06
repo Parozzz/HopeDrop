@@ -10,6 +10,7 @@ import java.util.Set;
 import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.condition.MobCondition;
 import me.parozzz.hopedrop.drop.ConditionManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

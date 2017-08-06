@@ -74,6 +74,7 @@ public class HopeDrop extends JavaPlugin
     
     private void initializeStaticClass()
     {
+        Utils.init();
         ReflectionUtils.initialize();
     }
     

@@ -21,7 +21,7 @@ import me.parozzz.hopedrop.condition.PlayerCondition.PlayerConditionType;
 import me.parozzz.hopedrop.condition.ToolCondition;
 import me.parozzz.hopedrop.condition.ToolCondition.ToolConditionType;
 import me.parozzz.hopedrop.drop.ConditionManager;
-import me.parozzz.hopedrop.drop.ConditionManagerType;
+import me.parozzz.hopedrop.drop.ConditionManager.ConditionManagerType;
 import me.parozzz.hopedrop.drop.block.BlockConditionManager;
 import me.parozzz.hopedrop.drop.item.ItemManager;
 import me.parozzz.hopedrop.drop.item.ItemManager.AmountModifierType;

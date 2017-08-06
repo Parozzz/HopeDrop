@@ -17,7 +17,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -75,7 +77,8 @@ public final class Utils {
         pl.getLogger().info("=====================");
     */
     
-    public static enum ColorEnum{
+    public static enum ColorEnum
+    {
         AQUA(Color.AQUA),BLACK(Color.BLACK),FUCHSIA(Color.FUCHSIA),
         GRAY(Color.GRAY),GREEN(Color.GREEN),LIME(Color.LIME),
         MAROON(Color.MAROON),NAVY(Color.NAVY),OLIVE(Color.OLIVE),
@@ -95,10 +98,55 @@ public final class Utils {
         }
     }
     
-    public static enum GiveCommandEnum{
+    public static enum GiveCommandEnum
+    {
         PLAYEROFFLINE,WRONGITEM,ITEMGIVEN,FULLINVENTORY;
     }
     
+    private static Function<Player,ItemStack> getHand;
+    private static Function<LivingEntity,Double> getMaxHealth;
+    private static BiConsumer<LivingEntity,Double> setMaxHealth;
+    private static Predicate<ItemStack> checkUnbreakable;
+    public static void init()
+    {
+        if(Utils.bukkitVersion("1.8"))
+        {
+            getHand = p -> p.getItemInHand();
+            getMaxHealth = ent -> ent.getMaxHealth();
+            setMaxHealth = (ent, health) -> ent.setMaxHealth(health);
+            checkUnbreakable = item -> false;
+        }
+        else
+        {
+            getHand = p -> p.getInventory().getItemInMainHand();
+            getMaxHealth= ent -> ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+            setMaxHealth = (ent, health) -> ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
+            
+            if(Utils.bukkitVersion("1.9", "1.10"))
+            {
+                checkUnbreakable = item -> item.getItemMeta().spigot().isUnbreakable();
+            }
+            else
+            {
+                checkUnbreakable = item -> item.getItemMeta().isUnbreakable();
+            }
+        }
+    }
+    
+    public static ItemStack getMainHand(final Player p)
+    {
+        return getHand.apply(p);
+    }
+    
+    public static double getMaxHealth(final LivingEntity ent)
+    {
+        return getMaxHealth.apply(ent);
+    }
+    
+    public static void setMaxHealth(final LivingEntity ent, final double health)
+    {
+        setMaxHealth.accept(ent, health);
+    }
     
     public static GiveCommandEnum giveCommand(final Player p,ItemStack item,final String amount)
     {
@@ -144,7 +192,10 @@ public final class Utils {
     public static int emptySlot(final Inventory i)
     {
         ItemStack[] storage = i.getContents();
-        if(!Bukkit.getVersion().contains("1.8")){ storage=i.getStorageContents(); }
+        if(!Bukkit.getVersion().contains("1.8"))
+        { 
+            storage=i.getStorageContents(); 
+        }
         
         Long amount=Arrays.stream(storage).filter((temp) -> temp==null).count();
         return amount.intValue();
@@ -160,7 +211,10 @@ public final class Utils {
         return Arrays.stream(array).allMatch(ob -> ob.equals(o));
     }
     
-    public static boolean isNumber(final String str) { return str.chars().allMatch(c -> Character.isDigit((char)c)); }
+    public static boolean isNumber(final String str) 
+    {
+        return str.chars().allMatch(c -> Character.isDigit((char)c)); 
+    }
     
     public static String color(final String s)
     {
@@ -183,22 +237,12 @@ public final class Utils {
         for(Integer j=0;;j++)
         {
             ret.add(j,s.contains(ch)?s.substring(0,s.indexOf(ch)):s);
-            if(!s.contains(ch)){ return ret; }
+            if(!s.contains(ch))
+            {
+                return ret; 
+            }
             s=s.substring(s.indexOf(ch)+1);
         }
-    }
-    
-    public static String join(final String joiner, final Object... array)
-    {
-        return Arrays.stream(array).map(Utils::toString).collect(Collectors.joining(joiner));
-    }
-    
-    public static Boolean getPercentageResult(final Object percent)
-    {
-        if(percent instanceof Integer){ return (Integer)percent>ThreadLocalRandom.current().nextInt(0, 101); }
-        else if(percent instanceof Double){ return (Double)percent>ThreadLocalRandom.current().nextDouble(0, 101D); }
-        else if(percent instanceof Long) { return (Long)percent>ThreadLocalRandom.current().nextLong(0, 101L); }
-        else { return null; }
     }
     
     public static FileConfiguration fileStartup(final JavaPlugin pl,final File file) throws FileNotFoundException, UnsupportedEncodingException, IOException, InvalidConfigurationException
@@ -209,18 +253,6 @@ public final class Utils {
         return c;
     }
     
-    public static ItemStack getHand(final Player p){ return Utils.bukkitVersion("1.8")?p.getItemInHand():p.getInventory().getItemInMainHand(); }
-    public static Double getMaxHealh(final LivingEntity ent)
-    {
-        if(Utils.bukkitVersion("1.8")) { return ent.getMaxHealth(); }
-        return ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-    }
-    public static void setMaxHealth(final LivingEntity ent, final Double value)
-    {
-        if(Utils.bukkitVersion("1.8")) { ent.setMaxHealth(value); }
-        else { ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(value); }
-        ent.setHealth(value);
-    }
     public static void setName(final Entity ent, final String name)
     {
         ent.setCustomName(name);
@@ -238,13 +270,20 @@ public final class Utils {
         as.setRemoveWhenFarAway(false);
         as.setBasePlate(false);
         as.setSilent(true);
-        if(!Utils.bukkitVersion("1.8")) { as.setInvulnerable(true); }
+        if(!Utils.bukkitVersion("1.8")) 
+        {
+            as.setInvulnerable(true); 
+        }
         return as;
     }
     
     public static Item spawnFloatingItem( final Location l, final String str, final Material type)
     {
-        if(type==null) { return null; }
+        if(type==null) 
+        { 
+            return null; 
+        }
+        
         Item item=l.getWorld().dropItem(l, new ItemStack(type));
         item.setPickupDelay(Integer.MAX_VALUE);
         item.setVelocity(new Vector(0,0,0));
@@ -252,19 +291,31 @@ public final class Utils {
         item.setCustomNameVisible(true);
         item.setGravity(false);
         item.setSilent(true);
-        if(!Utils.bukkitVersion("1.8")) { item.setInvulnerable(true); }
+        if(!Utils.bukkitVersion("1.8")) 
+        { 
+            item.setInvulnerable(true); 
+        }
         return item;
     }
     
-    public static void sendTitle(final Player p,final String title, final String subtitle) { Utils.sendTitle(p, title, subtitle, 10, 60, 10); }
+    public static void sendTitle(final Player p,final String title, final String subtitle) 
+    {
+        Utils.sendTitle(p, title, subtitle, 10, 60, 10); 
+    }
     
     public static void sendTitle(final Player p,final String title, final String subtitle, final int fadein, final int stay, final int fadeout)
     {
-        if(Utils.bukkitVersion("1.8","1.9","1.10")) { p.sendTitle(title, subtitle); }
+        if(Utils.bukkitVersion("1.8","1.9","1.10")) 
+        { 
+            p.sendTitle(title, subtitle); 
+        }
         else{ p.sendTitle(title, subtitle, fadein, stay, fadeout); }
     }
 
-    public static String chunkToString(final Chunk c){ return new StringBuilder().append(c.getX()).append(c.getZ()).toString(); }
+    public static String chunkToString(final Chunk c)
+    { 
+        return new StringBuilder().append(c.getX()).append(c.getZ()).toString(); 
+    }
 
     public static ItemStack getItemByPath(final ConfigurationSection path)
     { 
@@ -280,7 +331,10 @@ public final class Utils {
             {
                 item=new Potion(PotionType.valueOf(path.getString("type").toUpperCase())).splash().toItemStack(1);
             }
-            else { item=new ItemStack(id!=null?id:Material.valueOf(path.getString("id").toUpperCase())); }
+            else 
+            {
+                item=new ItemStack(id!=null?id:Material.valueOf(path.getString("id").toUpperCase())); 
+            }
 
             ItemMeta meta=item.getItemMeta();
             switch(item.getType())
@@ -289,7 +343,10 @@ public final class Utils {
                 case SPLASH_POTION:
                 case LINGERING_POTION:
                 case TIPPED_ARROW:
-                    if(path.contains("color") && bukkitVersion("1.11","1.12")){ ((PotionMeta)meta).setColor(ColorEnum.valueOf(path.getString("color").toUpperCase()).getBukkitColor()); }
+                    if(path.contains("color") && bukkitVersion("1.11","1.12"))
+                    { 
+                        ((PotionMeta)meta).setColor(ColorEnum.valueOf(path.getString("color").toUpperCase()).getBukkitColor()); 
+                    }
 
                     for(Iterator<String[]> it=path.getStringList("PotionEffect").stream().map(str -> str.split(":")).iterator();it.hasNext();)
                     {
@@ -298,9 +355,18 @@ public final class Utils {
                     }
                     break;
                 case MONSTER_EGG:
-                    if(bukkitVersion("1.8")) { item=new SpawnEgg(EntityType.valueOf(path.getString("data","PIG").toUpperCase())).toItemStack(1); }
-                    else if(bukkitVersion("1.9","1.10")) {  meta=NBT.setSpawnedType(item, EntityType.valueOf(path.getString("data","PIG").toUpperCase())).getItemMeta(); }
-                    else { ((SpawnEggMeta)meta).setSpawnedType(EntityType.valueOf(path.getString("data","PIG").toUpperCase()));   }
+                    if(bukkitVersion("1.8")) 
+                    {
+                        item=new SpawnEgg(EntityType.valueOf(path.getString("data","PIG").toUpperCase())).toItemStack(1); 
+                    }
+                    else if(bukkitVersion("1.9","1.10")) 
+                    { 
+                        meta=NBT.setSpawnedType(item, EntityType.valueOf(path.getString("data","PIG").toUpperCase())).getItemMeta(); 
+                    }
+                    else 
+                    {
+                        ((SpawnEggMeta)meta).setSpawnedType(EntityType.valueOf(path.getString("data","PIG").toUpperCase()));   
+                    }
                     break;
                 default:
                     item.setDurability((short)path.getInt("data",0));
@@ -355,21 +421,11 @@ public final class Utils {
     
     public static Boolean isUnbreakable(final ItemStack item)
     {
-        if(bukkitVersion("1.8")) { return false; }
-        else if(bukkitVersion("1.11","1.12")) { return item.getItemMeta().isUnbreakable(); }
-        else { return item.getItemMeta().spigot().isUnbreakable(); }
+        return checkUnbreakable.test(item);
     }
     
-    public static Boolean bukkitVersion(final String... version){ return Arrays.stream(version).filter(s -> Bukkit.getVersion().contains(s)).findAny().isPresent(); }
-
-    public static String toString(final Object o)
-    {
-        if(o instanceof Integer){ return Integer.toString((Integer)o); }
-        else if(o instanceof Double){ return Double.toString((Double)o); }
-        else if(o instanceof Long){ return Long.toString((Long)o); }
-        else if(o instanceof Float){ return Float.toString((Float)o); }
-        else if(o instanceof Short){ return Short.toString((Short)o); }
-        else if(o instanceof String){ return (String)o; }
-        else { return null; }
+    public static Boolean bukkitVersion(final String... version)
+    { 
+        return Arrays.stream(version).anyMatch(s -> Bukkit.getVersion().contains(s)); 
     }
 }

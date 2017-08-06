@@ -7,8 +7,6 @@ package me.parozzz.hopedrop.drop;
 
 import me.parozzz.hopedrop.drop.item.ItemManager;
 import me.parozzz.hopedrop.chance.ChanceManager;
-import me.parozzz.hopedrop.drop.item.NumberManager;
-import org.bukkit.inventory.ItemStack;
 
 /**
  *

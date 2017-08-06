@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import me.parozzz.hopedrop.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -49,7 +50,7 @@ public class ChanceManager
     {
         modifiers.add(p -> 
         {
-            return Optional.ofNullable(Utils.getHand(p)).map(hand -> hand.getEnchantmentLevel(ench)*modifier).orElseGet(() -> 0D);
+            return Optional.ofNullable(Utils.getMainHand(p)).map(hand -> hand.getEnchantmentLevel(ench)*modifier).orElseGet(() -> 0D);
         });
     }
     
@@ -60,6 +61,6 @@ public class ChanceManager
     
     public boolean random(final Player p)
     {
-        return ThreadLocalRandom.current().nextDouble(101D)<(chance+ modifiers.stream().map(pr -> pr.apply(p)).reduce(Double::sum).orElseGet(() -> 0D));
+        return ThreadLocalRandom.current().nextDouble(101D)<this.chance+ modifiers.stream().map(pr -> pr.apply(p)).reduce(Double::sum).orElseGet(() -> 0D);
     }
 }

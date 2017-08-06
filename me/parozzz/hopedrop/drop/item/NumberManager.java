@@ -5,15 +5,13 @@
  */
 package me.parozzz.hopedrop.drop.item;
 
-import java.util.Collection;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
-import org.bukkit.Bukkit;
 
 /**
  *
  * @author Paros
  */
+
 public class NumberManager 
 {
     private int min;

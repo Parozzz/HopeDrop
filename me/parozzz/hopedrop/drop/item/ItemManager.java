@@ -50,7 +50,7 @@ public class ItemManager
         //NumberManager manager =new NumberManager(min, max);
         modifiers.add((p, manager) -> 
         {
-            Optional.ofNullable(Utils.getHand(p))
+            Optional.ofNullable(Utils.getMainHand(p))
                 .map(item -> item.getEnchantmentLevel(ench))
                 .ifPresent(multiplier -> 
                 {
