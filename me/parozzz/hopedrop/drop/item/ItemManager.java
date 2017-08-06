@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,30 +43,32 @@ public class ItemManager
         simpleDrop = l -> l.getWorld().dropItemNaturally(l, item.clone());
     }
     
-    private final Set<Function<Player, NumberManager>> modifiers=new HashSet<>();
+    private final Set<BiConsumer<Player, NumberManager>> modifiers=new HashSet<>();
     
     public void addEnchantModifier(final Enchantment ench, final int min, final int max)
     {
-        NumberManager manager =new NumberManager(min, max);
-        modifiers.add(p -> 
+        //NumberManager manager =new NumberManager(min, max);
+        modifiers.add((p, manager) -> 
         {
-            return Optional.ofNullable(Utils.getHand(p))
+            Optional.ofNullable(Utils.getHand(p))
                 .map(item -> item.getEnchantmentLevel(ench))
-                .map(level -> manager.getMultipliedClone(level))
-                .orElseGet(() -> NumberManager.getEmptyManager());
+                .ifPresent(multiplier -> 
+                {
+                    manager.addToMinAdder(min * multiplier);
+                    manager.addToMaxAdder(max * multiplier);
+                });
         });
     }
     
     public void addPotionModifier(final PotionEffectType pet, final int min, final int max)
     {
-        NumberManager manager=new NumberManager(min, max);
-        
-        modifiers.add(p -> 
+        modifiers.add((p, manager) -> 
         {
-            return p.getActivePotionEffects().stream()
-                .filter(pe -> pe.getType()==pet)
-                .findFirst().map(pe -> manager.getMultipliedClone(pe.getAmplifier()+1))
-                .orElseGet(() -> NumberManager.getEmptyManager());
+            p.getActivePotionEffects().stream().filter(pe -> pe.getType()==pet).findFirst().ifPresent(pe -> 
+            {
+                manager.addToMinAdder(min*(pe.getAmplifier()+1));
+                manager.addToMaxAdder(max*(pe.getAmplifier()+1));
+            });
         });
     }
     
@@ -76,7 +79,8 @@ public class ItemManager
         modifiersDrop = (l,p) -> 
         {
             ItemStack toDrop=new ItemStack(item);
-            toDrop.setAmount(manager.getAddedClone(modifiers.stream().map(pr -> pr.apply(p)).collect(Collectors.toSet())).generateBetween());
+            modifiers.stream().forEach(cns -> cns.accept(p, manager));
+            toDrop.setAmount(manager.generateBetweenWithAdders());
             
             return l.getWorld().dropItemNaturally(l, toDrop);
         };

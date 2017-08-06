@@ -8,6 +8,7 @@ package me.parozzz.hopedrop.drop.item;
 import java.util.Collection;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
+import org.bukkit.Bukkit;
 
 /**
  *
@@ -54,30 +55,39 @@ public class NumberManager
         return max;
     }
     
-    public NumberManager getAddedClone(final int adder)
+    private int minAdder=0;
+    public void setMinAdder(final int adder)
     {
-        return new NumberManager(min + adder, max + adder);
+        minAdder=adder;
     }
     
-    public NumberManager getAddedClone(final Collection<NumberManager> managers)
+    public void addToMinAdder(final int add)
     {
-        NumberManager ret=new NumberManager(min, max);
-        managers.forEach(manager -> 
-        {
-            ret.addToMax(manager.getMax());
-            ret.addToMin(manager.getMin());
-        });
-        return ret;
+        minAdder+=add;
     }
     
-    public NumberManager getMultipliedClone(final int multiplier)
+    private int maxAdder=0;
+    public void setMaxAdder(final int adder)
     {
-        return new NumberManager(min * multiplier, max * multiplier);
+        maxAdder=adder;
+    }
+    
+    public void addToMaxAdder(final int add)
+    {
+        maxAdder+=add;
     }
     
     public int generateBetween()
     {
         return ThreadLocalRandom.current().nextInt(min, max+1);
+    }
+    
+    public int generateBetweenWithAdders()
+    {
+        int ret=ThreadLocalRandom.current().nextInt(min + minAdder, max + maxAdder + 1);
+        minAdder=0;
+        maxAdder=0;
+        return ret;
     }
     
     public static NumberManager getEmptyManager()
