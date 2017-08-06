@@ -121,7 +121,6 @@ public class DropHandler implements Listener
     @EventHandler(ignoreCancelled=true, priority=EventPriority.LOW)
     private void onMobDeath(final EntityDeathEvent e)
     {
-        long l=System.currentTimeMillis();
         Optional.ofNullable(mobs.get(e.getEntityType())).ifPresent(options -> 
         {
             if(options.hasExpModified())
@@ -154,8 +153,6 @@ public class DropHandler implements Listener
                                 item.simpleDrop(e.getEntity().getLocation());
                     });
         });
-        
-        Bukkit.getLogger().log(Level.INFO, "TIME MOB KILL:{0}", Long.toString(System.currentTimeMillis() - l));
     }
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
