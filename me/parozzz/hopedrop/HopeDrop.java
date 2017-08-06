@@ -36,6 +36,7 @@ public class HopeDrop extends JavaPlugin
         initializeStaticClass();
         
         this.getDataFolder().mkdir();
+        saveResource("ItemCreation.txt", true);
         
         try 
         {

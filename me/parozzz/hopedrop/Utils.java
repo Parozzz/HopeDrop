@@ -477,7 +477,7 @@ public final class Utils {
                         ((PotionMeta)meta).setColor(ColorEnum.valueOf(path.getString("color").toUpperCase()).getBukkitColor()); 
                     }
 
-                    for(Iterator<String[]> it=path.getStringList("PotionEffect").stream().map(str -> str.split(":")).iterator();it.hasNext();)
+                    for(Iterator<String[]> it=path.getStringList("PotionEffect").stream().map(str -> str.split(";")).iterator();it.hasNext();)
                     {
                         String[] array=it.next();
                         ((PotionMeta)meta).addCustomEffect(new PotionEffect(PotionEffectType.getByName(array[0]),Integer.parseInt(array[1]),Integer.parseInt(array[2])), true);
@@ -501,23 +501,19 @@ public final class Utils {
                     item.setDurability((short)path.getInt("data",0));
                     break;
             }
+            
             meta.setDisplayName(color(path.getString("name",new String())));
             meta.setLore(colorList(path.getStringList("lore")));
-            for(String str:path.getStringList("flag")) 
-            { 
-                meta.addItemFlags(ItemFlag.valueOf(str)); 
-            }
-
+            meta.addItemFlags(path.getStringList("flag").stream().map(str -> ItemFlag.valueOf(str.toUpperCase())).toArray(ItemFlag[]::new));
+            
             try
             {
-                for(Map.Entry<Enchantment,Integer> entry:path.getStringList("enchant").stream()
-                        .map(str -> str.split("#"))
-                        .collect(Collectors.toMap(array -> Enchantment.getByName(array[0].toUpperCase()), array -> Integer.parseInt(array[1])))
-                        .entrySet()) { meta.addEnchant(entry.getKey(), entry.getValue(), true); }
+                item.addUnsafeEnchantments(path.getStringList("enchant").stream().map(str -> str.split(";"))
+                        .collect(Collectors.toMap(array -> Enchantment.getByName(array[0].toUpperCase()), array -> Integer.parseInt(array[1]))));
             }
             catch(NullPointerException ex) 
             {
-                Bukkit.getLogger().severe("Wrong enchantment name!"); 
+                Bukkit.getLogger().severe("Wrong enchantment name in item creation!"); 
             }
 
             if(Utils.bukkitVersion("1.11","1.12")) 
