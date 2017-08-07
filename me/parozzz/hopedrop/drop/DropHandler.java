@@ -193,6 +193,7 @@ public class DropHandler implements Listener
                     .filter(bd -> killer==null?bd.getChanceManager().random():bd.getChanceManager().random(killer))
                     .forEach(bd -> 
                     {
+                        bd.getRewardManager().executeAll(e.getEntity().getLocation());
                         ItemManager item=bd.getItemManager();
                         if(killer!=null)
                         {
@@ -235,6 +236,7 @@ public class DropHandler implements Listener
                     .filter(bd -> bd.getChanceManager().random(e.getPlayer()))
                     .forEach(bd -> 
                     {
+                        bd.getRewardManager().executeAll(e.getBlock().getLocation());
                         bd.getRewardManager().executeAll(e.getPlayer());
                         
                         ItemManager item=bd.getItemManager();

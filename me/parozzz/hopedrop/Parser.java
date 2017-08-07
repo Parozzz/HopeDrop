@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import me.parozzz.hopedrop.Utils.ColorEnum;
 import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.chance.ChanceManager.ChanceModifierType;
 import me.parozzz.hopedrop.condition.ConditionType;
@@ -31,8 +33,10 @@ import me.parozzz.hopedrop.drop.item.ItemManager.AmountModifierType;
 import me.parozzz.hopedrop.drop.mob.MobConditionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -80,7 +84,27 @@ public class Parser
             case MONEY:
                 manager.addMoneyReward(Double.valueOf(value));
                 break;
+            case FIREWORK:
+                manager.addFireworkReward(Stream.of(value.split(";")).map(String::toUpperCase).map(ColorEnum::valueOf).map(ColorEnum::getBukkitColor).toArray(Color[]::new));
+                break;
+            case PLAYERSOUND:
+                Parser.parseSound(manager, value, true);
+                break;
+            case WORLDSOUND:
+                Parser.parseSound(manager, value, false);
+                break;
         }
+    }
+    
+    private static void parseSound(final RewardManager manager, final String value, final boolean playerSound)
+    {
+        String[] array=value.split(";");
+        
+        Sound sound=Sound.valueOf(array[0].toUpperCase().replace(" ", "_"));
+        float volume=Float.valueOf(array[1]);
+        float pitch=Float.valueOf(array[2]);
+        
+        manager.addSoundReward(sound, volume, pitch, playerSound);
     }
     
     public static ItemManager parseItemManager(final ConfigurationSection path)

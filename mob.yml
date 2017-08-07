@@ -52,3 +52,10 @@ Pig:
       - actionbar:&cYou_got_30_money #Send an actionbar to the player. "_" will be replaced with an empty space
       - playercommand:warp_spawn #Execute the command as the player. "_" will be replaced with an empty space
       - consolecommand:warp_spawn_%player% #Execute the command as the console. %player% will be replaced by the name who got the drop. "_" will be replaced with an empty space
+      - firework:blue;gray;green #Spawn a firework where them mob or block was.
+          #A list of possible colors https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Color.html
+      - playersound:ENTITY_EXPERIENCE_ORB_PICKUP;1;1 #Play a sound only for the player [SoundName;Volume;Pitch]
+      - worldsound:ENTITY_EXPERIENCE_ORB_PICKUP;1;1 #Play a sound for everyone near the block/mob [SoundName;Volume;Pitch]
+          #1.8 sound names http://docs.codelanx.com/Bukkit/1.8/org/bukkit/Sound.html
+          #1.9+ sound names https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
+          #Some of this sounds may not exist in your version (This is the 1.12.1 complete list)
