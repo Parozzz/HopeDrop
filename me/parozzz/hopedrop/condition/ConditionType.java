@@ -11,5 +11,5 @@ package me.parozzz.hopedrop.condition;
  */
 public enum ConditionType 
 {
-    GENERIC, MOB, PLAYER, TOOL;
+    GENERIC, MOB, PLAYER, TOOL, BLOCK;
 }

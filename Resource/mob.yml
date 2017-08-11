@@ -8,6 +8,7 @@ Pig:
   CoolThing:
     Item:
       id: diamond
+      data: 0
       name: "&cCool Diamond"
       lore:
         - "&7This is a cool diamond"
@@ -17,7 +18,7 @@ Pig:
         - enchant:LOOT_BONUS_BLOCKS;0-1 #This will add min-max to the default value for each level of looting enchant
         - potion:LUCK;0-1 #This will add min-max to the default value for each level of luck potion
     #You can complety remove this part for the item to be always dropped by the mob
-    chance: 50 #Default value of chance. This is always applied
+    chance: 50.5 #Default value of chance. This is always applied
     chanceModifiers:
       #Chance modifiers. This applies only if the player have killed the mob (Or have mined the block).
       - enchant:DAMAGE_ALL;3.5 #Add a certain % to the base value of chance for each level of sharpness
@@ -54,8 +55,8 @@ Pig:
       - consolecommand:warp_spawn_%player% #Execute the command as the console. %player% will be replaced by the name who got the drop. "_" will be replaced with an empty space
       - firework:blue;gray;green #Spawn a firework where them mob or block was.
           #A list of possible colors https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Color.html
-      - playersound:ENTITY_EXPERIENCE_ORB_PICKUP;1;1 #Play a sound only for the player [SoundName;Volume;Pitch]
-      - worldsound:ENTITY_EXPERIENCE_ORB_PICKUP;1;1 #Play a sound for everyone near the block/mob [SoundName;Volume;Pitch]
+#      - playersound:ENTITY_EXPERIENCE_ORB_PICKUP;1;1 #Play a sound only for the player [SoundName;Volume;Pitch]
+#      - worldsound:ENTITY_EXPERIENCE_ORB_PICKUP;1;1 #Play a sound for everyone near the block/mob [SoundName;Volume;Pitch]
           #1.8 sound names http://docs.codelanx.com/Bukkit/1.8/org/bukkit/Sound.html
           #1.9+ sound names https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
           #Some of this sounds may not exist in your version (This is the 1.12.1 complete list)

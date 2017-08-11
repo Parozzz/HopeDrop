@@ -6,8 +6,10 @@
 package me.parozzz.hopedrop.drop.block;
 
 import me.parozzz.hopedrop.chance.ChanceManager;
+import me.parozzz.hopedrop.condition.BlockCondition;
 import me.parozzz.hopedrop.drop.ConditionManager;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,13 +19,21 @@ import org.bukkit.inventory.ItemStack;
  */
 public class BlockConditionManager extends ConditionManager
 {
+    
+    private final BlockCondition blockCondition;
     public BlockConditionManager()
     {
         super();
+        blockCondition=new BlockCondition();
     }
     
-    public boolean checkAll(final Location l, final Player p, final ItemStack tool)
+    public BlockCondition getBlockCondition()
     {
-        return getGenericCondition().checkAll(l) && getPlayerCondition().checkAll(p) && getToolCondition().checkAll(tool);
+        return blockCondition;
+    }
+    
+    public boolean checkAll(final Location l, final Player p, final ItemStack tool, final Block b)
+    {
+        return getGenericCondition().checkAll(l) && getPlayerCondition().checkAll(p) && getToolCondition().checkAll(tool) && getBlockCondition().checkAll(b);
     }
 }

@@ -232,7 +232,7 @@ public class DropHandler implements Listener
             }
             
             options.getDrops().stream()
-                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getMainHand(e.getPlayer().getEquipment())))
+                    .filter(bd -> bd.getConditionManager().checkAll(e.getBlock().getLocation(), e.getPlayer(), Utils.getMainHand(e.getPlayer().getEquipment()), e.getBlock()))
                     .filter(bd -> bd.getChanceManager().random(e.getPlayer()))
                     .forEach(bd -> 
                     {

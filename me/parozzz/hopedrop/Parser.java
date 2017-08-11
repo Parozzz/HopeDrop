@@ -7,12 +7,13 @@ package me.parozzz.hopedrop;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import me.parozzz.hopedrop.Utils.ColorEnum;
 import me.parozzz.hopedrop.chance.ChanceManager;
 import me.parozzz.hopedrop.chance.ChanceManager.ChanceModifierType;
+import me.parozzz.hopedrop.condition.BlockCondition;
+import me.parozzz.hopedrop.condition.BlockCondition.BlockConditionType;
 import me.parozzz.hopedrop.condition.ConditionType;
 import me.parozzz.hopedrop.condition.GenericCondition;
 import me.parozzz.hopedrop.condition.GenericCondition.GenericConditionType;
@@ -246,6 +247,9 @@ public class Parser
                         case TOOL:
                             Parser.addToolCondition(manager.getToolCondition(), ToolConditionType.valueOf(condition.toUpperCase()), value);
                             break;
+                        case BLOCK:
+                            Parser.addBlockCondition(((BlockConditionManager)manager).getBlockCondition(), BlockConditionType.valueOf(condition.toUpperCase()), value);
+                            break;
                     }
                 });
         return manager;
@@ -322,6 +326,16 @@ public class Parser
                 break;
             case PERMISSION:
                 cond.addPermissionCheck(value);
+                break;
+        }
+    }
+    
+    private static void addBlockCondition(final BlockCondition cond, final BlockConditionType type, final String value)
+    {
+        switch(type)
+        {
+            case DATA:
+                cond.addDataCheck(Short.valueOf(value));
                 break;
         }
     }
