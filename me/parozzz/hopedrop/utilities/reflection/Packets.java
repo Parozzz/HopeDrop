@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.parozzz.hopedrop.reflection;
+package me.parozzz.hopedrop.utilities.reflection;
 
-import me.parozzz.hopedrop.Utils;
-import static me.parozzz.hopedrop.reflection.ReflectionUtils.getVersion;
+import static me.parozzz.hopedrop.utilities.reflection.ReflectionUtils.version;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,21 +22,20 @@ public class Packets
     private static Method serialize;
     private static Class<?> nmsChatSerializer;
     
-    protected static void initialize() 
-            throws ClassNotFoundException, NoSuchFieldException
+    protected static void init() throws ClassNotFoundException, NoSuchFieldException
     {
-        if (getVersion().contains("1_8")) 
+        if (version.contains("1_8")) 
         {
-            if (getVersion().contains("R1")) 
+            if (version.contains("R1")) 
             {
                 nmsChatSerializer = ReflectionUtils.getNMSClass("ChatSerializer");
             } 
-            else if (getVersion().contains("R2") || getVersion().contains("R3")) 
+            else if (version.contains("R2") || version.contains("R3")) 
             {
                 nmsChatSerializer = ReflectionUtils.getNMSClass("IChatBaseComponent$ChatSerializer");
             }
         } 
-        else if (Utils.bukkitVersion("1.8","1.9","1.10","1.11","1.12")) 
+        else 
         {
             nmsChatSerializer = ReflectionUtils.getNMSClass("IChatBaseComponent$ChatSerializer");
         }
@@ -52,8 +50,7 @@ public class Packets
         getWorld=ReflectionUtils.getMethod(EntityPlayer, "getWorld", new Class[0]);
     }
     
-    public static Object getHandle(final Player p) 
-            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    public static Object getHandle(final Player p) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         return handle.invoke(p);
     }
@@ -64,27 +61,22 @@ public class Packets
         return getWorld.invoke(handle);
     }
     
-    public static Object playerConnection(final Object handle) 
-            throws IllegalArgumentException, IllegalAccessException
+    public static Object playerConnection(final Object handle) throws IllegalArgumentException, IllegalAccessException
     {
         return playerConnection.get(handle);
     }
     
-    public static Object getStringSerialized(final String str) 
-            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    public static Object getStringSerialized(final String str) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         return serialize.invoke(nmsChatSerializer,"{\"text\":\""+str+"\"}");
     }
     
-    public static void sendPacket(final Player p, final Object packet)
-            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    public static void sendPacket(final Player p, final Object packet) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
-        
-        sendPacket(Packets.playerConnection(Packets.getHandle(p)),packet);
+        sendPacket(playerConnection(getHandle(p)),packet);
     }
             
-    public static void sendPacket(final Object playerConnection, final Object packet)
-            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    public static void sendPacket(final Object playerConnection, final Object packet) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         ReflectionUtils.getMethod(playerConnection.getClass(), "sendPacket").invoke(playerConnection, packet);
     }

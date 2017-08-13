@@ -10,11 +10,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
-import me.parozzz.hopedrop.Utils;
-import org.bukkit.Bukkit;
+import me.parozzz.hopedrop.utilities.Utils;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 /**

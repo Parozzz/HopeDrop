@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.parozzz.hopedrop.reflection;
+package me.parozzz.hopedrop.utilities.reflection;
 
-import static me.parozzz.hopedrop.reflection.Packets.getHandle;
-import static me.parozzz.hopedrop.reflection.Packets.playerConnection;
-import static me.parozzz.hopedrop.reflection.Packets.sendPacket;
+import static me.parozzz.hopedrop.utilities.reflection.Packets.getHandle;
+import static me.parozzz.hopedrop.utilities.reflection.Packets.playerConnection;
+import static me.parozzz.hopedrop.utilities.reflection.Packets.sendPacket;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -17,10 +17,9 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import me.parozzz.hopedrop.HopeDrop;
+import java.util.stream.IntStream;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 /**
  *
  * @author Paros
@@ -91,7 +90,7 @@ public class Particle
     }
     
     private static Constructor<?> PacketPlayOutWorldParticles;
-    protected static void initialize()
+    protected static void init()
     {
         try 
         {
@@ -120,24 +119,13 @@ public class Particle
         {
             case CLOUD:
                 ThreadLocalRandom random=ThreadLocalRandom.current();
-                for(int j=0;j<10;j++)
-                {
-                    particles.addPacket(particle, l, (float)random.nextDouble(1D),(float)random.nextDouble(1D),(float)random.nextDouble(1D), 0F, count);
-                }
+                IntStream.of(10).forEach(i -> particles.addPacket(particle, l, (float)random.nextDouble(1D),(float)random.nextDouble(1D),(float)random.nextDouble(1D), 0F, count));
                 break;
             case EXPLOSION:
                 particles.addPacket(particle,l,0F,0F,0F,10F,count);
                 break;
         }
-       
-        new BukkitRunnable() 
-        {
-            @Override
-            public void run() 
-            {
-                players.forEach(p -> particles.spawn(p));
-            }
-        }.runTask(HopeDrop.instance);
+        players.forEach(p -> particles.spawn(p));
     }
     
     private static final class ParticlePacket

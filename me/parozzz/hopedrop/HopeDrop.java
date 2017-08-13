@@ -13,7 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import me.parozzz.hopedrop.drop.DropHandler;
-import me.parozzz.hopedrop.reflection.ReflectionUtils;
+import me.parozzz.hopedrop.utilities.reflection.ReflectionUtils;
+import me.parozzz.hopedrop.utilities.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -60,7 +61,7 @@ public class HopeDrop extends JavaPlugin
         {
             unregisterAll();
         }
-        
+         
         FileConfiguration mob=Utils.fileStartup(this, new File(this.getDataFolder(), "mob.yml"));
         FileConfiguration block=Utils.fileStartup(this, new File(this.getDataFolder(), "block.yml"));
         
@@ -84,9 +85,8 @@ public class HopeDrop extends JavaPlugin
     
     private void initializeStaticClass()
     {
-        Utils.init(this);
-        ReflectionUtils.initialize();
-        
+        Utils.init();
+        ReflectionUtils.init();
         if(Dependency.setupEconomy())
         {
             Bukkit.getLogger().info("Hooked into Vault");

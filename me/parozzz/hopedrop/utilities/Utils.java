@@ -3,20 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package me.parozzz.hopedrop;
+package me.parozzz.hopedrop.utilities;
 
-import me.parozzz.hopedrop.reflection.NBT;
+import me.parozzz.hopedrop.utilities.reflection.NBT;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -31,7 +30,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -52,7 +50,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -216,18 +213,13 @@ public final class Utils {
         }
     }
     
-    public static enum GiveCommandEnum
-    {
-        PLAYEROFFLINE,WRONGITEM,ITEMGIVEN,FULLINVENTORY;
-    }
-    
     private static final String FIREWORK_DATA="Firework.NoDamage";
     
     private static Function<EntityEquipment,ItemStack> getHand;
     private static Function<LivingEntity,Double> getMaxHealth;
     private static BiConsumer<LivingEntity,Double> setMaxHealth;
     private static Predicate<ItemStack> checkUnbreakable;
-    public static void init(final JavaPlugin instance)
+    public static void init()
     {
         CreatureType.init();
         if(Utils.bukkitVersion("1.8"))
@@ -257,7 +249,7 @@ public final class Utils {
                     {
                         e.setCancelled(e.getDamager().getType()==EntityType.FIREWORK && e.getDamager().hasMetadata(FIREWORK_DATA));
                     }
-                }, instance);
+                }, JavaPlugin.getProvidingPlugin(Utils.class));
             }
         }
     }
@@ -277,19 +269,6 @@ public final class Utils {
         setMaxHealth.accept(ent, health);
     }
     
-    public static GiveCommandEnum giveCommand(final Player p,ItemStack item,final String amount)
-    {
-        if(p==null){ return GiveCommandEnum.PLAYEROFFLINE; }
-        
-        if(item==null){ return GiveCommandEnum.WRONGITEM; }
-        else { item=item.clone(); }
-        
-        if(amount!=null && amount.chars().noneMatch(i -> Character.isLetter(i))){ item.setAmount(Integer.parseInt(amount)); }
-        
-        if(giveAndDropItem(p.getInventory(),item,p.getLocation())){ return GiveCommandEnum.ITEMGIVEN; }
-        else{ return GiveCommandEnum.FULLINVENTORY; }
-    }
-    
     public static String booleanToEz(final boolean bln)
     {
         if(bln)
@@ -300,34 +279,6 @@ public final class Utils {
         {
             return ChatColor.RED+"NO";
         }
-    }
-    
-    public static boolean giveAndDropItem(final Inventory i, final ItemStack item, final Location l)
-    {
-        Map<Integer,ItemStack> notFit=i.addItem(item.clone());
-        if(!notFit.values().isEmpty())
-        {
-            notFit.values().stream().forEach((temp) -> l.getWorld().dropItem(l, temp));
-            return false;
-        }
-        return true;
-    }
-    
-    public static boolean addOnlyItem(final Inventory i, final ItemStack item)
-    {
-        return i.addItem(item.clone()).values().isEmpty();
-    }
-    
-    public static int emptySlot(final Inventory i)
-    {
-        ItemStack[] storage = i.getContents();
-        if(!Bukkit.getVersion().contains("1.8"))
-        { 
-            storage=i.getStorageContents(); 
-        }
-        
-        Long amount=Arrays.stream(storage).filter((temp) -> temp==null).count();
-        return amount.intValue();
     }
     
     public static boolean or(final Object o, final Object... array)
@@ -374,12 +325,13 @@ public final class Utils {
         }
     }
     
-    public static FileConfiguration fileStartup(final JavaPlugin pl,final File file) throws FileNotFoundException, UnsupportedEncodingException, IOException, InvalidConfigurationException
+    public static FileConfiguration fileStartup(final JavaPlugin pl,final File file) throws FileNotFoundException, UnsupportedEncodingException 
     {
-        if(!file.exists()) { pl.saveResource(file.getPath().replace("plugins"+File.separator+pl.getName()+File.separator, ""), true); }
-        FileConfiguration c=new YamlConfiguration();
-        c.load(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-        return c;
+        if(!file.exists()) 
+        {
+            pl.saveResource(file.getPath().replace("plugins"+File.separator+pl.getName()+File.separator, ""), true);
+        }
+        return YamlConfiguration.loadConfiguration(new InputStreamReader(new FileInputStream(file), "UTF-8"));
     }
     
     public static void setName(final Entity ent, final String name)
@@ -406,25 +358,23 @@ public final class Utils {
         return as;
     }
     
-    public static Item spawnFloatingItem( final Location l, final String str, final Material type)
+    public static Item spawnFloatingItem(final Location l, final String str, final Material type)
     {
-        if(type==null) 
-        { 
-            return null; 
-        }
-        
-        Item item=l.getWorld().dropItem(l, new ItemStack(type));
-        item.setPickupDelay(Integer.MAX_VALUE);
-        item.setVelocity(new Vector(0,0,0));
-        item.setCustomName(str);
-        item.setCustomNameVisible(true);
-        item.setGravity(false);
-        item.setSilent(true);
-        if(!Utils.bukkitVersion("1.8")) 
-        { 
-            item.setInvulnerable(true); 
-        }
-        return item;
+        return Optional.ofNullable(type).map(m -> 
+        {
+            Item item=l.getWorld().dropItem(l, new ItemStack(m));
+            item.setPickupDelay(Integer.MAX_VALUE);
+            item.setVelocity(new Vector(0,0,0));
+            item.setCustomName(str);
+            item.setCustomNameVisible(true);
+            item.setGravity(false);
+            item.setSilent(true);
+            if(!Utils.bukkitVersion("1.8")) 
+            { 
+                item.setInvulnerable(true); 
+            }  
+            return item;
+        }).orElseGet(() -> null);
     }
     
     public static void sendTitle(final Player p,final String title, final String subtitle) 

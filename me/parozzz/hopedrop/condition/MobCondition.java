@@ -5,12 +5,11 @@
  */
 package me.parozzz.hopedrop.condition;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
-import me.parozzz.hopedrop.Utils;
+import me.parozzz.hopedrop.utilities.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.LivingEntity;
