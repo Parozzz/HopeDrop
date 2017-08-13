@@ -8,8 +8,6 @@ package me.parozzz.hopedrop.utilities.reflection;
 import me.parozzz.hopedrop.utilities.Utils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.SecureRandom;
-import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.bukkit.Material;
@@ -17,7 +15,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import me.parozzz.hopedrop.utilities.reflection.NBTTag.NBTCompound;
 import me.parozzz.hopedrop.utilities.reflection.NBTTag.NBTList;
-import org.bukkit.attribute.Attribute;
 
 /**
  *
@@ -112,121 +109,50 @@ public class NBT
         MAINHAND, OFFHAND, FEET, LEGS, CHEST, HEAD;
     }
     
-    public static class AttributeModifier
+    public static enum ItemAttribute
     {
-        private final UUID u;
+        MAX_HEALTH("generic.maxHealth"),
+        KNOCKBACK_RESISTANCE("generic.knockbackResistance"),
+        MOVEMENT_SPEED("generic.movementSpeed"),
+        ATTACK_DAMAGE("generic.attackDamage"),
+        ATTACK_SPEED("generic.attackSpeed"),
+        ARMOR("generic.armor"),
+        ARMOR_TOUGHTNESS("generic.armorToughness"),
+        LUCK("generic.luck");
+        
+        private final String name;
+        private ItemAttribute(final String name)
+        {
+            this.name=name;
+        }
+        
+        public String getName()
+        {
+            return name;
+        }
+    }
+    
+    public static class ItemAttributeModifier
+    {
+        private final UUID randomUUID;
         private final NBTList attributeList;
-        public AttributeModifier() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+        public ItemAttributeModifier() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
         {
-            u=UUID.randomUUID();
             attributeList=new NBTList();
+            randomUUID=UUID.randomUUID();
         }
         
-        public void attackSpeed(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+        public void addModifier(final AttributeSlot slot, final ItemAttribute attribute,final double value) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
         {
-            NBTCompound speed=new NBTCompound();
-            speed.addValue("AttributeName", "generic.attackSpeed");
-            speed.addValue("Name", "generic.attackSpeed");
-            speed.addValue("Amount", modifier);
-            speed.addValue("Operation", 0);
-            speed.addValue("UUIDLeast", u.getLeastSignificantBits());
-            speed.addValue("UUIDMost", u.getMostSignificantBits());
-            speed.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(speed);
-        }
-        
-        public void attackDamage(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            NBTCompound damage=new NBTCompound();
-            damage.addValue("AttributeName", "generic.attackDamage");
-            damage.addValue("Name", "generic.attackDamage");
-            damage.addValue("Amount", modifier);
-            damage.addValue("Operation", 0);
-            damage.addValue("UUIDLeast", u.getLeastSignificantBits());
-            damage.addValue("UUIDMost", u.getMostSignificantBits());
-            damage.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(damage);
-        }
-        
-        public void movementSpeed(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            NBTCompound speed=new NBTCompound();
-            speed.addValue("AttributeName", "generic.movementSpeed");
-            speed.addValue("Name", "generic.movementSpeed");
-            speed.addValue("Amount", modifier);
-            speed.addValue("Operation", 0);
-            speed.addValue("UUIDLeast", u.getLeastSignificantBits());
-            speed.addValue("UUIDMost", u.getMostSignificantBits());
-            speed.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(speed);
-        }
-        
-        public void maxHealth(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            NBTCompound health=new NBTCompound();
-            health.addValue("AttributeName", "generic.maxHealth");
-            health.addValue("Name", "generic.maxHealth");
-            health.addValue("Amount", modifier);
-            health.addValue("Operation", 0);
-            health.addValue("UUIDLeast", u.getLeastSignificantBits());
-            health.addValue("UUIDMost", u.getMostSignificantBits());
-            health.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(health);
-        }
-        
-        public void luck(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            NBTCompound luck=new NBTCompound();
-            luck.addValue("AttributeName", "generic.luck");
-            luck.addValue("Name", "generic.luck");
-            luck.addValue("Amount", modifier);
-            luck.addValue("Operation", 0);
-            luck.addValue("UUIDLeast", u.getLeastSignificantBits());
-            luck.addValue("UUIDMost", u.getMostSignificantBits());
-            luck.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(luck);
-        }
-        
-        public void armor(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            NBTCompound armor=new NBTCompound();
-            armor.addValue("AttributeName", "generic.armor");
-            armor.addValue("Name", "generic.armor");
-            armor.addValue("Amount", modifier);
-            armor.addValue("Operation", 0);
-            armor.addValue("UUIDLeast", u.getLeastSignificantBits());
-            armor.addValue("UUIDMost", u.getMostSignificantBits());
-            armor.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(armor);
-        }
-        
-        public void armorToughness(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            NBTCompound toughness=new NBTCompound();
-            toughness.addValue("AttributeName", "generic.armorToughness");
-            toughness.addValue("Name", "generic.armorToughness");
-            toughness.addValue("Amount", modifier);
-            toughness.addValue("Operation", 0);
-            toughness.addValue("UUIDLeast", u.getLeastSignificantBits());
-            toughness.addValue("UUIDMost", u.getMostSignificantBits());
-            toughness.addValue("Slot", slot.name().toLowerCase());
-            attributeList.addTag(toughness);
-        }
-        
-        public void knockbackResistance(final AttributeSlot slot, final double modifier) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            if(modifier<=1D)
-            {                
-                NBTCompound knockback=new NBTCompound();
-                knockback.addValue("AttributeName", "generic.knockbackResistance");
-                knockback.addValue("Name", "generic.knockbackResistance");
-                knockback.addValue("Amount", modifier);
-                knockback.addValue("Operation", 0);
-                knockback.addValue("UUIDLeast", u.getLeastSignificantBits());
-                knockback.addValue("UUIDMost", u.getMostSignificantBits());
-                knockback.addValue("Slot", slot.name().toLowerCase());
-                attributeList.addTag(knockback);
-            }
+            NBTCompound modifierCompound=new NBTCompound();
+            modifierCompound.addValue("AttributeName", attribute.getName());
+            modifierCompound.addValue("Name", attribute.getName());
+            modifierCompound.addValue("Amount", value);
+            modifierCompound.addValue("Operation", 0);
+            modifierCompound.addValue("UUIDLeast", randomUUID.getLeastSignificantBits());
+            modifierCompound.addValue("UUIDMost", randomUUID.getMostSignificantBits());
+            modifierCompound.addValue("Slot", slot.name().toLowerCase());
+            attributeList.addTag(modifierCompound);
         }
         
         public void apply(final ItemNBT item) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException

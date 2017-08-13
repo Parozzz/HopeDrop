@@ -58,50 +58,50 @@ public class NBTTag
     #### NBT BASE ####
     ==================
     */
-    public static Class<?> baseClass;
-    public final static Map<Class<?>, Constructor<?>> baseConstructors=new HashMap<>();
+    protected static Class<?> baseClass;
+    protected final static Map<Class<?>, Constructor<?>> baseConstructors=new HashMap<>();
     
     /*
     ==================
     #### COMPOUND ####
     ==================
     */
-    public static Class<?> compoundClass;
-    public static Constructor<?> compound;
+    protected static Class<?> compoundClass;
+    protected static Constructor<?> compound;
     
     /*
     ==========================
     #### COMPOUND SETTERS ####
     ==========================
     */
-    public static Method compoundSetNBT;
-    public static Method compoundKeySet;
-    public static Method compoundGetTypeByKey;
+    protected static Method compoundSetNBT;
+    protected static Method compoundKeySet;
+    protected static Method compoundGetTypeByKey;
     
-    public static final Map<Class<?>,Method> compoundSetters=new HashMap<>();
+    protected static final Map<Class<?>,Method> compoundSetters=new HashMap<>();
     
     /*
     ==========================
     #### COMPOUND GETTERS ####
     ==========================
     */    
-    public static Method compoundHasKey;
-    public static Method compoundHasKeyOfType;
-    public static Method compoundRemoveKey; 
+    protected static Method compoundHasKey;
+    protected static Method compoundHasKeyOfType;
+    protected static Method compoundRemoveKey; 
     
-    public static final Map<Class<?>,Method> compoundGetters=new HashMap<>();
+    protected static final Map<Class<?>,Method> compoundGetters=new HashMap<>();
     /*
     ==============
     #### LIST ####
     ==============
     */
-    public static Class<?> listClass;
+    protected static Class<?> listClass;
     
-    public static Constructor<?> list;
-    public static Method listAddTo;
-    public static Method listGetType;
+    protected static Constructor<?> list;
+    protected static Method listAddTo;
+    protected static Method listGetType;
     
-    public static void init() throws NoSuchMethodException
+    protected static void init() throws NoSuchMethodException
     {  
         baseClass=ReflectionUtils.getNMSClass("NBTBase");
         listClass=ReflectionUtils.getNMSClass("NBTTagList");
