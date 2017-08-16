@@ -22,44 +22,44 @@ public class PlayerCondition
         GAMEMODE, HEALTH, HUNGER, LEVEL, ONFIRE, PERMISSION;
     }
     
-    private final Set<Predicate<Player>> conditions;
+    private Predicate<Player> condition;
     public PlayerCondition()
     {
-        conditions=new HashSet<>();
+        condition=p -> true;
     }
     
     public void addPermissionCheck(final String perm)
     {
-        conditions.add(p -> p.hasPermission(perm));
+        condition=condition.and(p -> p.hasPermission(perm));
     }
     
     public void addOnFireCheck(final boolean onFire)
     {
-        conditions.add(onFire? p -> p.getFireTicks()!=-1 : p -> p.getFireTicks()==-1);
+        condition=condition.and(onFire? p -> p.getFireTicks()!=-1 : p -> p.getFireTicks()==-1);
     }
     
     public void addLevelCheck(final int level)
     {
-        conditions.add(p -> p.getLevel()>=level);
+        condition=condition.and(p -> p.getLevel()>=level);
     }
     
     public void addHungerCheck(final int hunger)
     {
-        conditions.add(p -> p.getFoodLevel()>=hunger);
+        condition=condition.and(p -> p.getFoodLevel()>=hunger);
     }
     
     public void addHealthCheck(final double health)
     {
-        conditions.add(p -> p.getHealth()>=health);
+        condition=condition.and(p -> p.getHealth()>=health);
     }
     
     public void addGameModeCheck(final GameMode gm)
     {
-        conditions.add(p -> p.getGameMode()==gm);
+        condition=condition.and(p -> p.getGameMode()==gm);
     }
     
     public boolean checkAll(final Player p)
     {
-        return conditions.stream().allMatch(pr -> pr.test(p));
+        return condition.test(p);
     }
 }

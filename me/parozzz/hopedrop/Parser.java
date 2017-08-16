@@ -39,6 +39,7 @@ import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -208,6 +209,11 @@ public class Parser
 
                     return pet;
                 }).orElseThrow(() -> new NullPointerException(potion+" is not a valid potion"));
+                break;
+            case ATTRIBUTE:
+                Attribute attr=Attribute.valueOf("GENERIC_"+value.substring(0, value.indexOf(";")));
+                
+                manager.addPlayerAttributeModifier(attr, Double.valueOf(value.substring(value.indexOf(";")+1)));
                 break;
         }
     }

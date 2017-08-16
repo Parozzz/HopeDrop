@@ -25,29 +25,29 @@ public class GenericCondition
         YLEVEL;
     }
 
-    private final Set<Predicate<Location>> conditions;
+    private Predicate<Location> condition;
     public GenericCondition()
     {
-        conditions=new HashSet<>();
+        condition=l -> true;
     }
     
     public void addBiomeCheck(final Biome biome)
     {
-        conditions.add(l -> l.getBlock().getBiome()==biome);
+        condition=condition.and(l -> l.getBlock().getBiome()==biome);
     }
     
     public void addWorldCheck(final World w)
     {
-        conditions.add(l -> l.getWorld().equals(w));
+        condition=condition.and(l -> l.getWorld().equals(w));
     }
     
     public void addYCheck(final int minLevel, final int maxLevel)
     {
-        conditions.add(l -> l.getY() >=minLevel && l.getY() <=maxLevel);
+       condition=condition.and(l -> l.getY() >=minLevel && l.getY() <=maxLevel);
     }
     
     public boolean checkAll(final Location l)
     {
-        return conditions.stream().allMatch(pr -> pr.test(l));
+        return condition.test(l);
     }
 }

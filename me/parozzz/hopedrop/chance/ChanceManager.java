@@ -6,11 +6,14 @@
 package me.parozzz.hopedrop.chance;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import me.parozzz.hopedrop.utilities.Utils;
+import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -23,7 +26,7 @@ public class ChanceManager
 {
     public enum ChanceModifierType
     {
-        ENCHANT, POTION, LEVEL;
+        ENCHANT, POTION, LEVEL, ATTRIBUTE;
     }
     
     private final Set<Function<Player,Double>> modifiers;
@@ -34,22 +37,27 @@ public class ChanceManager
         modifiers=new HashSet<>();
     }
     
-    public void addPlayerLevelModifier(final double modifier)
+    public void addPlayerLevelModifier(final double value)
     {
-        modifiers.add(p -> p.getLevel()*modifier);
+        modifiers.add(p -> p.getLevel()*value);
     }
     
-    public void addPlayerPotionModifier(final PotionEffectType pet, final double modifier)
+    public void addPlayerAttributeModifier(final Attribute attr, final double value)
     {
-        modifiers.add(p -> p.getActivePotionEffects().stream().filter(pe -> pe.getType()==pet).findFirst().map(pe -> pe.getAmplifier()).orElseGet(() -> 0)*modifier);
-    }
-    
-    public void addPlayerToolEnchantmentModifier(final Enchantment ench, final double modifier)
-    {
-        modifiers.add(p -> 
+        if(!Utils.bukkitVersion("1.8"))
         {
-            return Optional.ofNullable(Utils.getMainHand(p.getEquipment())).map(hand -> hand.getEnchantmentLevel(ench)*modifier).orElseGet(() -> 0D);
-        });
+            modifiers.add(p -> p.getAttribute(attr).getValue()*value);
+        }
+    }
+    
+    public void addPlayerPotionModifier(final PotionEffectType pet, final double value)
+    {
+        modifiers.add(p -> p.getActivePotionEffects().stream().filter(pe -> pe.getType()==pet).findFirst().map(pe -> pe.getAmplifier()*value).orElseGet(() -> 0D));
+    }
+    
+    public void addPlayerToolEnchantmentModifier(final Enchantment ench, final double value)
+    {
+        modifiers.add(p -> Optional.ofNullable(Utils.getMainHand(p.getEquipment())).map(hand -> hand.getEnchantmentLevel(ench)*value).orElseGet(() -> 0D));
     }
     
     public boolean random()
@@ -59,6 +67,6 @@ public class ChanceManager
     
     public boolean random(final Player p)
     {
-        return ThreadLocalRandom.current().nextDouble(101D)<this.chance+ modifiers.stream().map(pr -> pr.apply(p)).reduce(Double::sum).orElseGet(() -> 0D);
+        return ThreadLocalRandom.current().nextDouble(101D)<chance+ modifiers.stream().map(pr -> pr.apply(p)).reduce(Double::sum).orElseGet(() -> 0D);
     }
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import me.parozzz.hopedrop.Configs;
 import me.parozzz.hopedrop.Dependency;
 import me.parozzz.hopedrop.Parser;
@@ -49,7 +50,7 @@ public class DropHandler implements Listener
     {
         mobs=new EnumMap(CreatureType.class);
         blocks=new EnumMap(Material.class);
-        
+
         mob.getKeys(false).stream()
                 .collect(Collectors.toMap(str -> mob.getConfigurationSection(str), str -> CreatureType.valueOf(str.toUpperCase())))
                 .forEach((path, ct) -> 
@@ -197,14 +198,14 @@ public class DropHandler implements Listener
                         if(killer!=null)
                         {
                             bd.getRewardManager().executeAll(killer);
-                            if(item.hasModifiersDrop())
+                            if(item.hasModifiedItem())
                             {
-                                item.modifiersDrop(e.getEntity().getLocation(), killer);
+                                e.getDrops().add(item.getModifiedItem(killer));
                             }
                         }
                         else
                         {
-                            item.simpleDrop(e.getEntity().getLocation());
+                            e.getDrops().add(item.getItem());
                         }
                     });
         });
@@ -239,7 +240,7 @@ public class DropHandler implements Listener
                         bd.getRewardManager().executeAll(e.getPlayer());
                         
                         ItemManager item=bd.getItemManager();
-                        Item entity=item.hasModifiersDrop()?item.modifiersDrop(e.getBlock().getLocation(), e.getPlayer()):item.simpleDrop(e.getBlock().getLocation());
+                        e.getBlock().getWorld().dropItem(e.getBlock().getLocation(), item.hasModifiedItem()?item.getModifiedItem(e.getPlayer()):item.getItem());
                     });
         });
     }

@@ -6,10 +6,7 @@
 package me.parozzz.hopedrop.utilities.reflection;
 
 import me.parozzz.hopedrop.utilities.Utils;
-import static me.parozzz.hopedrop.utilities.reflection.Packets.getHandle;
 import static me.parozzz.hopedrop.utilities.reflection.Packets.getStringSerialized;
-import static me.parozzz.hopedrop.utilities.reflection.Packets.playerConnection;
-import static me.parozzz.hopedrop.utilities.reflection.Packets.sendPacket;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;

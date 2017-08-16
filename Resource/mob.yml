@@ -23,6 +23,8 @@ Pig:
       #Chance modifiers. This applies only if the player have killed the mob (Or have mined the block).
       - enchant:DAMAGE_ALL;3.5 #Add a certain % to the base value of chance for each level of sharpness
       - potion:LUCK;2.5 #Add a certain % to the base value of chance for each level of luck potion 
+      - attribute:LUCK;2.5 #Add a certain % to the base value of chance based on how much higher this attribute is. REQUIRE MINECRAFT 1.9+
+                        #You can use this for players: LUCK, MAX_HEALTH, ATTACK_DAMAGE, ATTACK_SPEED, ARMOR
       - level:0.25 #Add a certain % to the base value of chance for each level the player have
     condition:
       #Generic conditions. Involves worlds and location based conditions.

@@ -87,7 +87,7 @@ public class NBTTag
     */    
     protected static Method compoundHasKey;
     protected static Method compoundHasKeyOfType;
-    protected static Method compoundRemoveKey; 
+    protected static Method compoundRemoveKey; //compoundRemoveKey.invoke(Object compound, String key); 
     
     protected static final Map<Class<?>,Method> compoundGetters=new HashMap<>();
     /*
@@ -260,11 +260,6 @@ public class NBTTag
         public <T> T getKey(final String key, final Class<T> type) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
         {
             return (T)compoundGetters.get(type).invoke(nbtCompound, key);//(T)NBTTag.compoundGet(this, key, type);
-        }
-        
-        public void removeKey(final String key) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
-        {
-            compoundRemoveKey.invoke(nbtCompound, key);
         }
         
         public Set<String> keySet() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 

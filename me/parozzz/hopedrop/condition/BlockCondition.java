@@ -21,19 +21,19 @@ public class BlockCondition
         DATA;
     }
     
-    private final Set<Predicate<Block>> conditions;
+    private Predicate<Block> condition;
     public BlockCondition()
     {
-        conditions=new HashSet<>();
+        condition= b -> true;
     }
     
     public void addDataCheck(final short data)
     {
-        conditions.add(b -> b.getState().getData().toItemStack().getDurability()==data);
+        condition=condition.and(b -> b.getState().getData().toItemStack().getDurability()==data);
     }
     
     public boolean checkAll(final Block b)
     {
-        return conditions.stream().allMatch(prd -> prd.test(b));
+        return condition.test(b);
     }
 }

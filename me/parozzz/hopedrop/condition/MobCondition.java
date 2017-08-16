@@ -29,15 +29,15 @@ public class MobCondition
         BABY, EQUIPMENT, KILLREASON, NAME, ONFIRE;
     }
     
-    private final Set<Predicate<LivingEntity>> conditions;
+    private Predicate<LivingEntity> condition;
     public MobCondition()
     {
-        conditions=new HashSet<>();
+        condition=ent -> true;
     }
     
     public void addAgeCheck(final boolean baby)
     {
-        conditions.add(ent -> ent instanceof Ageable && ((Ageable)ent).isAdult()!=baby);
+        condition=condition.and(ent -> ent instanceof Ageable && ((Ageable)ent).isAdult()!=baby);
     }
     
     public void addEquipmentCheck(final EquipmentSlot slot, final Material type)
@@ -45,26 +45,22 @@ public class MobCondition
         switch(slot)
         {
             case HEAD:
-                conditions.add(ent -> ent.getEquipment().getHelmet()!=null && ent.getEquipment().getHelmet().getType()==type);
+                condition=condition.and(ent -> ent.getEquipment().getHelmet()!=null && ent.getEquipment().getHelmet().getType()==type);
                 break;
             case CHEST:
-                conditions.add(ent -> ent.getEquipment().getChestplate()!=null && ent.getEquipment().getChestplate().getType()==type);
+                condition=condition.and(ent -> ent.getEquipment().getChestplate()!=null && ent.getEquipment().getChestplate().getType()==type);
                 break;
             case LEGS:
-                conditions.add(ent -> ent.getEquipment().getLeggings()!=null && ent.getEquipment().getLeggings().getType()==type);
+                condition=condition.and(ent -> ent.getEquipment().getLeggings()!=null && ent.getEquipment().getLeggings().getType()==type);
                 break;
             case FEET:
-                conditions.add(ent -> ent.getEquipment().getBoots()!=null && ent.getEquipment().getBoots().getType()==type);
+                condition=condition.and(ent -> ent.getEquipment().getBoots()!=null && ent.getEquipment().getBoots().getType()==type);
                 break;
             case HAND:
-                conditions.add(ent -> 
-                { 
-                    ItemStack hand=Utils.getMainHand(ent.getEquipment());
-                    return hand!=null && hand.getType()==type;
-                });
+                condition=condition.and(ent -> Utils.getMainHand(ent.getEquipment())!=null && Utils.getMainHand(ent.getEquipment()).getType()==type);
                 break;
             default:
-                conditions.add(ent -> ent.getEquipment().getItemInOffHand()!=null && ent.getEquipment().getItemInOffHand().getType()==type);
+                condition=condition.and(ent -> ent.getEquipment().getItemInOffHand()!=null && ent.getEquipment().getItemInOffHand().getType()==type);
                 break;
         }
     }
@@ -81,30 +77,30 @@ public class MobCondition
         switch(reason)
         {
             case PLAYER:
-                conditions.add(ent -> ent.getKiller()!=null);
+                condition=condition.and(ent -> ent.getKiller()!=null);
                 break;
             case FALL:
-                conditions.add(ent -> ent.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.FALL));
+                condition=condition.and(ent -> ent.getLastDamageCause().getCause().equals(EntityDamageEvent.DamageCause.FALL));
                 break;
             case FIRE:
                 EnumSet<DamageCause> causes=EnumSet.of(DamageCause.FIRE, DamageCause.LAVA, DamageCause.FIRE_TICK);
-                conditions.add(ent -> causes.contains(ent.getLastDamageCause().getCause()));
+                condition=condition.and(ent -> causes.contains(ent.getLastDamageCause().getCause()));
                 break;
         }
     }
     
     public void addOnFireCheck(final boolean onFire)
     {
-        conditions.add(onFire? ent -> ent.getFireTicks()!=-1 : ent -> ent.getFireTicks()==-1);
+        condition=condition.and(onFire? ent -> ent.getFireTicks()!=-1 : ent -> ent.getFireTicks()==-1);
     }
     
     public void addNameCheck(final String name)
     {
-        conditions.add(ent -> ent.getCustomName()!=null && ent.getCustomName().equals(name));
+        condition=condition.and(ent -> ent.getCustomName()!=null && ent.getCustomName().equals(name));
     }
     
     public boolean checkAll(final LivingEntity ent)
     {
-        return conditions.stream().allMatch(pr -> pr.test(ent));
+        return condition.test(ent);
     }
 }

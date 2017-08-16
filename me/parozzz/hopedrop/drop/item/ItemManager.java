@@ -30,14 +30,10 @@ public class ItemManager
         POTION, ENCHANT;
     }
     
-    private final Function<Location,Item> simpleDrop;
-    
     private final ItemStack item;
     public ItemManager(final ItemStack item)
     {
         this.item=item;
-        
-        simpleDrop = l -> l.getWorld().dropItemNaturally(l, item.clone());
     }
     
     private final Set<BiConsumer<Player, NumberManager>> modifiers=new HashSet<>();
@@ -69,37 +65,32 @@ public class ItemManager
         });
     }
     
-    private BiFunction<Location, Player, Item> modifiersDrop; 
+    private Function<Player, ItemStack> modifiedDrop; 
     public void setMinAndMax(final int min, final int max)
     {
         NumberManager manager=new NumberManager(min, max);
-        modifiersDrop = (l,p) -> 
+        modifiedDrop = p -> 
         {
-            ItemStack toDrop=new ItemStack(item);
+            ItemStack toDrop=item.clone();
             modifiers.stream().forEach(cns -> cns.accept(p, manager));
             toDrop.setAmount(manager.generateBetweenWithAdders());
             
-            return l.getWorld().dropItemNaturally(l, toDrop);
+            return toDrop;
         };
     }
     
     public ItemStack getItem()
     {
-        return item;
+        return item.clone();
     }
     
-    public Item simpleDrop(final Location l)
+    public boolean hasModifiedItem()
     {
-        return simpleDrop.apply(l);
+        return modifiedDrop!=null;
     }
     
-    public boolean hasModifiersDrop()
+    public ItemStack getModifiedItem(final Player p)
     {
-        return modifiersDrop!=null;
-    }
-    
-    public Item modifiersDrop(final Location l, final Player p)
-    {
-        return modifiersDrop.apply(l, p);
+        return modifiedDrop.apply(p);
     }
 }

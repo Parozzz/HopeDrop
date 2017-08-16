@@ -13,6 +13,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,7 @@ import org.bukkit.FireworkEffect.Builder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -52,6 +55,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -91,7 +95,7 @@ public final class Utils {
     */
     public static enum CreatureType
     {
-        ALL,
+        MOBALL,
         BAT,
         BLAZE,
         SPIDER, CAVE_SPIDER,
@@ -215,6 +219,10 @@ public final class Utils {
     
     private static final String FIREWORK_DATA="Firework.NoDamage";
     
+    public static EnumSet<BlockFace> cardinals=EnumSet.of(BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH);
+    
+    private static BiConsumer<PlayerInventory, ItemStack> setPlayerHand;
+    private static BiConsumer<EntityEquipment, ItemStack> setHand;
     private static Function<EntityEquipment,ItemStack> getHand;
     private static Function<LivingEntity,Double> getMaxHealth;
     private static BiConsumer<LivingEntity,Double> setMaxHealth;
@@ -224,7 +232,9 @@ public final class Utils {
         CreatureType.init();
         if(Utils.bukkitVersion("1.8"))
         {
-            getHand = p -> p.getItemInHand();
+            getHand = equip -> equip.getItemInHand();
+            setHand = (equip, item) -> equip.setItemInHand(item);
+            setPlayerHand = (inv, item) -> inv.setItemInHand(item);
             getMaxHealth = ent -> ent.getMaxHealth();
             setMaxHealth = (ent, health) -> ent.setMaxHealth(health);
             checkUnbreakable = item -> false;
@@ -232,6 +242,8 @@ public final class Utils {
         else
         {
             getHand = equip -> equip.getItemInMainHand();
+            setHand = (equip, item) -> equip.setItemInMainHand(item);
+            setPlayerHand = (inv, item) -> inv.setItemInMainHand(item);
             getMaxHealth= ent -> ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             setMaxHealth = (ent, health) -> ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health);
             
@@ -259,6 +271,16 @@ public final class Utils {
         return getHand.apply(equip);
     }
     
+    public static void setMainHand(final EntityEquipment equip, final ItemStack item)
+    {
+        setHand.accept(equip, item);
+    }
+    
+    public static void setPlayerMainHand(final PlayerInventory inv, final ItemStack item)
+    {
+        setPlayerHand.accept(inv, item);
+    }
+    
     public static double getMaxHealth(final LivingEntity ent)
     {
         return getMaxHealth.apply(ent);
@@ -267,6 +289,12 @@ public final class Utils {
     public static void setMaxHealth(final LivingEntity ent, final double health)
     {
         setMaxHealth.accept(ent, health);
+    }
+    
+    public static <T> Collection<T> clearCollection(final Collection<T> coll)
+    {
+        coll.clear();
+        return coll;
     }
     
     public static String booleanToEz(final boolean bln)
@@ -398,10 +426,10 @@ public final class Utils {
 
     public static ItemStack getItemByPath(final ConfigurationSection path)
     { 
-        return getItemByPath(null,path);
+        return getItemByPath(null, (short)0, path);
     }
     
-    public static ItemStack getItemByPath(final Material id, final ConfigurationSection path)
+    public static ItemStack getItemByPath(final Material id, final short data, final ConfigurationSection path)
     {
         ItemStack item=null;
         try
@@ -448,7 +476,7 @@ public final class Utils {
                     }
                     break;
                 default:
-                    item.setDurability((short)path.getInt("data",0));
+                    item.setDurability((short)path.getInt("data",data));
                     break;
             }
             

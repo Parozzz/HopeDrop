@@ -24,33 +24,33 @@ public class ToolCondition
     }
     
     
-    private final Set<Predicate<ItemStack>> conditions;
+    private Predicate<ItemStack> condition;
     public ToolCondition()
     {
-        conditions=new HashSet<>();
+        condition=tool -> true;
     }
     
     public void addEnchantmentCheck(final Enchantment ench, final int level)
     {
-        conditions.add(item -> item.getEnchantmentLevel(ench)==level);
+        condition=condition.and(tool -> tool.getEnchantmentLevel(ench)==level);
     }
     
     public void addEnchantmentCheck(final Enchantment ench, final int minLevel, final int maxLevel)
     {
-        conditions.add(item -> 
+        condition=condition.and(tool -> 
         {
-           int enchLevel=item.getEnchantmentLevel(ench);
+           int enchLevel=tool.getEnchantmentLevel(ench);
            return enchLevel>=minLevel && enchLevel<=maxLevel;
         });
     }
     
     public void addMaterialCheck(final Material type)
     {
-        conditions.add(item -> item.getType()==type);
+        condition=condition.and(tool -> tool.getType()==type);
     }
     
     public boolean checkAll(final ItemStack tool)
     {
-        return conditions.stream().allMatch(pr -> pr.test(tool));
+        return condition.test(tool);
     }
 }

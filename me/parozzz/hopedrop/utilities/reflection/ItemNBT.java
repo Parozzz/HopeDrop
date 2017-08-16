@@ -8,6 +8,7 @@ package me.parozzz.hopedrop.utilities.reflection;
 import me.parozzz.hopedrop.utilities.reflection.NBTTag.NBTCompound;
 import me.parozzz.hopedrop.utilities.reflection.NBTTag.NBTType;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +40,8 @@ public class ItemNBT
     {
         try 
         {
-            return (T)NBTTag.compoundGetters.get(clazz).invoke(NBT.getItemTag(NBT.asNMSCopy(item)), key);
+            Object obj=NBT.getItemTag(NBT.asNMSCopy(item));
+            return obj!=null? (T)NBTTag.compoundGetters.get(clazz).invoke(obj, key) : null;
         }
         catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) 
         {
