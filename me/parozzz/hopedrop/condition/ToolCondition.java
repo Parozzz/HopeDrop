@@ -44,9 +44,9 @@ public class ToolCondition
         });
     }
     
-    public void addMaterialCheck(final Material type)
+    public void addMaterialCheck(final Material type, final boolean equals)
     {
-        condition=condition.and(tool -> tool.getType()==type);
+        condition = equals ? condition.and(tool -> tool.getType() == type) : condition.and(tool -> tool.getType() != type);
     }
     
     public boolean checkAll(final ItemStack tool)

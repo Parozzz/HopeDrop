@@ -374,7 +374,14 @@ public class Parser
                 }).orElseThrow(() -> new NullPointerException(enchant+" is not a valid enchanment"));
                 break;
             case TYPE:
-                cond.addMaterialCheck(Material.valueOf(value.toUpperCase()));
+                if(value.startsWith("!"))
+                {
+                    cond.addMaterialCheck(Material.valueOf(value.replace("!", "").toUpperCase()), false);
+                }
+                else
+                {
+                    cond.addMaterialCheck(Material.valueOf(value.toUpperCase()), false);
+                }
                 break;
         }
     }

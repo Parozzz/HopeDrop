@@ -30,6 +30,7 @@ Diamond_Ore:
       - generic->biome:taiga #Check the biome of where the event is happen.
       #Tool conditions. Involves conditions on the tool has been used.
       - tool->type:DIAMOND_PICKAXE #Check the tool type
+      - tool->type:!GOLD_PICKAXE #Check which tool should not be used. If they use the gold_pick, they won't receive the drop
       - tool->enchant:DAMAGE_ALL;3-5 #Check which enchantment and which level the tool must have.
       - tool->enchant:DAMAGE_ALL;1 #Can be also used without - to check only for a specific enchantment level
       #Player conditions. Involves conditions on player status
