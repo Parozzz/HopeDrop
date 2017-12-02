@@ -1,5 +1,5 @@
 name: HopeDrop
-version: 1.1
+version: 1.21
 main: me.parozzz.hopedrop.HopeDrop
 author: Parozzz
 commands:
@@ -7,3 +7,4 @@ commands:
     aliases: [drop, hpd]
     Usage: /drop
     Description: Main plugin command
+softdepend: [Vault]

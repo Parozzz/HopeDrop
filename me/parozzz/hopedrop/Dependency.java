@@ -18,11 +18,12 @@ public class Dependency
     public static Economy eco;
     protected static boolean setupEconomy()
     {
-        return Optional.ofNullable(Bukkit.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class)).map(provider -> 
+        if(Bukkit.getPluginManager().isPluginEnabled("Vault"))
         {
-            eco = provider.getProvider();
-            return true;
-        }).orElseGet(() -> false);
+            eco = Bukkit.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
+        }
+        
+        return eco != null;
     }
     
     public static boolean isEconomyEnabled()

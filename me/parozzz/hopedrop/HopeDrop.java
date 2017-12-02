@@ -38,7 +38,7 @@ public class HopeDrop extends JavaPlugin
         
         this.getDataFolder().mkdir();
         saveResource("ItemCreation.txt", true);
-        
+         
         try 
         {
             load(false);
@@ -69,6 +69,13 @@ public class HopeDrop extends JavaPlugin
         initializeListeners(dropHandler);
         
         FileConfiguration c=Utils.fileStartup(this, new File(this.getDataFolder(), "config.yml"));
+        
+        if(c.getBoolean("metric", true))
+        {
+            new MetricsLite(this);
+        }
+        
+        
         initializeCommand("hopedrop", new MainCommand(c));
         Configs.init(c);
     }

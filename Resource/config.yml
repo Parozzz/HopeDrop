@@ -1,3 +1,4 @@
+metric: true
 actionbarMoney: true #Should the onMoneyReceive message be displayed on the actionbar?
 
 Message:
